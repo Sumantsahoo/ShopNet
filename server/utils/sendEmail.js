@@ -1,4 +1,3 @@
-
 const nodemailer = require("nodemailer");
 
 const isPlaceholder = (value) =>
@@ -9,33 +8,49 @@ const isPlaceholder = (value) =>
 
 const sendEmail = async (to, subject, text) => {
   if (process.env.EMAIL_ENABLED === "false") {
-    throw new Error("Email sending is disabled in .env");
+    throw new Error("Email sending is disabled in environment variables (EMAIL_ENABLED=false)");
   }
 
-  if (
-    isPlaceholder(process.env.EMAIL_USER) ||
-    isPlaceholder(process.env.EMAIL_PASS)
-  ) {
+  const emailUser = process.env.EMAIL_USER ? process.env.EMAIL_USER.trim() : "";
+  const emailPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, "").trim() : "";
+
+  if (isPlaceholder(emailUser) || isPlaceholder(emailPass)) {
     throw new Error(
-      "Configure EMAIL_USER and EMAIL_PASS in server/.env"
+      "EMAIL_USER or EMAIL_PASS is not configured in environment variables."
     );
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT || 465),
-    secure: process.env.SMTP_SECURE !== "false",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  const isGmail = !process.env.SMTP_HOST || process.env.SMTP_HOST.includes("gmail");
+
+  const transportConfig = isGmail
+    ? {
+        service: "gmail",
+        auth: {
+          user: emailUser,
+          pass: emailPass,
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
+      }
+    : {
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT || 465),
+        secure: process.env.SMTP_SECURE !== "false",
+        auth: {
+          user: emailUser,
+          pass: emailPass,
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
+      };
+
+  const transporter = nodemailer.createTransport(transportConfig);
 
   try {
-    await transporter.verify();
-
     const result = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM || emailUser,
       to,
       subject,
       text,
@@ -44,7 +59,7 @@ const sendEmail = async (to, subject, text) => {
     console.log("Email accepted:", result.messageId);
     console.log("Accepted recipients:", result.accepted);
 
-    if (result.rejected.length > 0) {
+    if (result.rejected && result.rejected.length > 0) {
       throw new Error("The email provider rejected the recipient.");
     }
 
