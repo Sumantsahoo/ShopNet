@@ -11,7 +11,7 @@ const app=express();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 const frontendOrigins = [
-    'http://localhost:3000',
+    ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000'] : []),
     process.env.FRONTEND_URL,
     process.env.FRONTED_URL
 ].filter(Boolean).flatMap((origin) => origin.split(',').map((value) => value.trim()).filter(Boolean));
