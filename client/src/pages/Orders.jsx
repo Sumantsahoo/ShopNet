@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import WishlistButton from '../components/WishlistButton';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../utils/api';
 import '../styles/orders.css';
 
 const dateLocales = { en: 'en-IN', hi: 'hi-IN', or: 'or-IN', te: 'te-IN', ta: 'ta-IN', pa: 'pa-IN', bn: 'bn-IN' };
@@ -33,7 +34,7 @@ const Orders = () => {
 
         const fetchOrders = async () => {
             try {
-                const response = await fetch('/api/orders/myorders', {
+                const response = await apiFetch('/api/orders/myorders', {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 const data = await response.json();
@@ -57,7 +58,7 @@ const Orders = () => {
         setExchangeSubmittingId(orderId);
         setExchangeMessages((current) => ({ ...current, [orderId]: null }));
         try {
-            const response = await fetch(`/api/orders/${orderId}/exchange-request`, {
+            const response = await apiFetch(`/api/orders/${orderId}/exchange-request`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

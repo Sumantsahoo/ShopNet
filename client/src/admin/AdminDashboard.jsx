@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 import './admin.css';
 
 const AdminDashboard = () => {
@@ -22,7 +23,7 @@ const AdminDashboard = () => {
 
         const loadStats = async () => {
             try {
-                const response = await fetch('/api/analytics', {
+                const response = await apiFetch('/api/analytics', {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 const data = await response.json();
@@ -55,7 +56,13 @@ const AdminDashboard = () => {
                     <article><span>Customers</span><strong>{stats.totalUsers}</strong></article>
                     <article><span>Products</span><strong>{stats.totalProducts}</strong></article>
                     <article><span>Orders</span><strong>{stats.totalOrders}</strong></article>
+                    <article><span>Paid orders</span><strong>{stats.totalPaidOrders}</strong></article>
                     <article><span>Revenue</span><strong>₹{Number(stats.totalRevenue || 0).toLocaleString('en-IN')}</strong></article>
+                    <article className="admin-stat-unavailable">
+                        <span>Profit / loss</span>
+                        <strong>Not tracked</strong>
+                        <small>Product costs and expenses are not recorded.</small>
+                    </article>
                 </section>
             )}
             <nav className="admin-shortcuts" aria-label="Admin management">

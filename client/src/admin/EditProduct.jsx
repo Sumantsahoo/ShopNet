@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 import './admin.css';
 
 const EditProduct = () => {
@@ -26,7 +27,7 @@ const EditProduct = () => {
 
         const loadProducts = async () => {
             try {
-                const response = await fetch('/api/products');
+                const response = await apiFetch('/api/products');
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Could not load products.');
                 setProducts(data);
@@ -56,7 +57,7 @@ const EditProduct = () => {
         setError('');
         setMessage('');
         try {
-            const response = await fetch(`/api/products/${product._id}`, {
+            const response = await apiFetch(`/api/products/${product._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

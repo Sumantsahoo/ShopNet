@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 import '../styles/orders.css';
 
 const orderStatuses = ['pending', 'processing', 'shipped'];
@@ -20,7 +21,7 @@ const AdminOrders = () => {
         }
         setError('');
         try {
-            const response = await fetch('/api/orders', {
+            const response = await apiFetch('/api/orders', {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             const data = await response.json();
@@ -52,7 +53,7 @@ const AdminOrders = () => {
         setUpdatingId(orderId);
         setError('');
         try {
-            const response = await fetch(`/api/orders/${orderId}/status`, {
+            const response = await apiFetch(`/api/orders/${orderId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,7 +87,7 @@ const AdminOrders = () => {
         setUpdatingId(orderId);
         setError('');
         try {
-            const response = await fetch(`/api/orders/${orderId}/exchange-request`, {
+            const response = await apiFetch(`/api/orders/${orderId}/exchange-request`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -117,7 +118,7 @@ const AdminOrders = () => {
         setUpdatingId(orderId);
         setError('');
         try {
-            const response = await fetch(`/api/orders/${orderId}/payment-confirmation`, {
+            const response = await apiFetch(`/api/orders/${orderId}/payment-confirmation`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,12 +1,13 @@
 import React from 'react';
 import {useSelector,useDispatch} from 'react-redux';
 import {Link,useNavigate} from 'react-router-dom';
-import {removeFromCart,updateCartQuantity} from '../redux/cartSlice';
+import {removeFromCart,setCheckoutItems,updateCartQuantity} from '../redux/cartSlice';
 import { useLanguage } from '../context/LanguageContext';
 import '../styles/cart.css';
 
 const Cart = () => {
     const cartItems=useSelector((state)=>state.cart.cartItems);
+    const checkoutItemIds=useSelector((state)=>state.cart.checkoutItemIds);
     const dispatch=useDispatch();
     const navigate=useNavigate();
     const { t } = useLanguage();
@@ -17,7 +18,16 @@ const Cart = () => {
     const handleUpdateQty=(item,qty)=>{
         dispatch(updateCartQuantity({id:item._id || item.productId,qty}));
     };
-    const totalPrice=cartItems.reduce((acc,item)=> acc+item.price*item.qty,0);
+    const selectedItems=cartItems.filter((item)=>checkoutItemIds.some((id)=>String(id)===String(item._id || item.productId)));
+    const selectedTotal=selectedItems.reduce((total,item)=>total+Number(item.price)*Number(item.qty),0);
+    const allSelected=cartItems.length>0 && selectedItems.length===cartItems.length;
+
+    const toggleCheckoutItem=(itemId)=>{
+        const isSelected=checkoutItemIds.some((id)=>String(id)===String(itemId));
+        dispatch(setCheckoutItems(isSelected
+            ? checkoutItemIds.filter((id)=>String(id)!==String(itemId))
+            : [...checkoutItemIds,itemId]));
+    };
 
     return(
         <div className='cart-container'>
@@ -28,9 +38,24 @@ const Cart = () => {
             (
                 <div className='cart-layout'>
                     <div className='cart-items'>
+                        <button
+                            type="button"
+                            className="cart-selection-toggle"
+                            onClick={()=>dispatch(setCheckoutItems(allSelected ? [] : cartItems.map((item)=>item._id || item.productId)))}
+                        >
+                            {allSelected ? t('clearSelection') : t('selectAll')}
+                        </button>
                         {
                             cartItems.map((item)=>(
                                 <div key={item._id || item.productId} className='cart-item'>
+                                    <label className="cart-select-item">
+                                        <input
+                                            type="checkbox"
+                                            checked={checkoutItemIds.some((id)=>String(id)===String(item._id || item.productId))}
+                                            onChange={()=>toggleCheckoutItem(item._id || item.productId)}
+                                            aria-label={`Select ${item.name} for checkout`}
+                                        />
+                                    </label>
                                     <img src={item.imageUrl} alt={item.name} className='cart-item-image'/>
                                     <div className='cart-item-details'>
                                         <h4>{item.name}</h4>
@@ -46,8 +71,11 @@ const Cart = () => {
                             ))
                         }
                         <div className='cart-summary'>
-                            <h3>{t('total')}: {totalPrice.toFixed(2)}</h3>
-                            <button onClick={()=>navigate('/checkout')} className='btn btn-checkout'>{t('proceedCheckout')}</button>
+                            <div>
+                                <p>{t('selectedItems').replace('{count}', String(selectedItems.length))}</p>
+                                <h3>{t('selectedSubtotal')}: ₹{selectedTotal.toFixed(2)}</h3>
+                            </div>
+                            <button onClick={()=>navigate('/checkout')} className='btn btn-checkout' disabled={selectedItems.length===0}>{t('buySelectedItems')}</button>
                         </div>
                     </div>
                 </div>

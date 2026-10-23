@@ -8,12 +8,15 @@ const getAdminStats = async (req, res) => {
         const totalProducts = await Product.countDocuments({});
         const orders = await Order.find({});
         const totalOrders = orders.length;
-        const totalRevenueData = orders.reduce((acc, item) => acc + (item.totalPrice || 0), 0);
+        const paidOrders = orders.filter((order) => order.isPaid);
+        const totalRevenueData = paidOrders.reduce((acc, order) => acc + (order.totalPrice || 0), 0);
 
         res.json({
             totalUsers,
             totalProducts,
             totalOrders,
+            totalPaidOrders: paidOrders.length,
+            unpaidOrders: totalOrders - paidOrders.length,
             totalRevenue: totalRevenueData
         });
     } catch (error) {

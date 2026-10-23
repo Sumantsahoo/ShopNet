@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 import './admin.css';
 
 const AdminUsers = () => {
@@ -9,6 +10,14 @@ const AdminUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const formatJoinedDate = (account) => {
+        if (account.joinedAt) return new Date(account.joinedAt).toLocaleDateString('en-IN');
+        const timestamp = account._id?.slice(0, 8);
+        return timestamp && /^[a-f\d]{8}$/i.test(timestamp)
+            ? new Date(Number.parseInt(timestamp, 16) * 1000).toLocaleDateString('en-IN')
+            : '—';
+    };
 
     useEffect(() => {
         if (!user?.token) {
@@ -22,7 +31,7 @@ const AdminUsers = () => {
 
         const loadUsers = async () => {
             try {
-                const response = await fetch('/api/authorite/user', {
+                const response = await apiFetch('/api/authorite/user', {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 const data = await response.json();
@@ -50,16 +59,17 @@ const AdminUsers = () => {
             {!loading && !error && (
                 <div className="admin-table-wrap">
                     <table className="admin-table">
-                        <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+                        <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Last login</th></tr></thead>
                         <tbody>
                             {users.map((account) => (
                                 <tr key={account._id}>
                                     <td>{account.name}</td>
                                     <td>{account.email}</td>
-                                    <td>{account.createdAt ? new Date(account.createdAt).toLocaleDateString() : '—'}</td>
+                                    <td>{formatJoinedDate(account)}</td>
+                                    <td>{account.lastLoginAt ? new Date(account.lastLoginAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'Never'}</td>
                                 </tr>
                             ))}
-                            {users.length === 0 && <tr><td colSpan="3">No customers found.</td></tr>}
+                            {users.length === 0 && <tr><td colSpan="4">No customers found.</td></tr>}
                         </tbody>
                     </table>
                 </div>

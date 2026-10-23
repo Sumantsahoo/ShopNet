@@ -2,9 +2,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { clearCart } from '../redux/cartSlice';
+import { removeCartItems } from '../redux/cartSlice';
 import { DISTRICTS_BY_STATE, INDIAN_STATES_AND_UTS, lookupIndiaPin } from '../utils/indiaAddress';
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../utils/api';
 import '../styles/checkout.css';
 
 const loadRazorpay = () => new Promise((resolve) => {
@@ -23,6 +24,7 @@ const loadRazorpay = () => new Promise((resolve) => {
 const Checkout = () => {
   const { user } = useContext(AuthContext);
   const cartItems = useSelector((state) => state.cart.cartItems);
+  const checkoutItemIds = useSelector((state) => state.cart.checkoutItemIds);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -36,6 +38,7 @@ const Checkout = () => {
   const [message, setMessage] = useState('');
   const [messageIsError, setMessageIsError] = useState(false);
   const [pinLookup, setPinLookup] = useState({ loading: false, message: '', isError: false });
+  const selectedCartItems = cartItems.filter((item) => checkoutItemIds.some((id) => String(id) === String(item._id || item.productId)));
 
   useEffect(() => {
     if (!/^\d{6}$/.test(address.postalCode)) {
@@ -73,7 +76,7 @@ const Checkout = () => {
 
     const loadSavedAddress = async () => {
       try {
-        const response = await fetch('/api/authorite/profile', {
+        const response = await apiFetch('/api/authorite/profile', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         if (!response.ok) return;
@@ -101,7 +104,7 @@ const Checkout = () => {
     return () => { cancelled = true; };
   }, [user?.name, user?.phone, user?.token]);
 
-  const itemsPrice = cartItems.reduce((total, item) => total + Number(item.price) * Number(item.qty), 0);
+  const itemsPrice = selectedCartItems.reduce((total, item) => total + Number(item.price) * Number(item.qty), 0);
   const taxPrice = Math.round(itemsPrice * 0.005 * 100) / 100;
   const promiseFee = 5;
   const shippingPrice = 9;
@@ -124,7 +127,7 @@ const Checkout = () => {
       return;
     }
 
-    const paymentOrderResponse = await fetch('/api/payment/order', {
+    const paymentOrderResponse = await apiFetch('/api/payment/order', {
       method: 'POST',
       headers: authHeaders,
       body: JSON.stringify({ orderId })
@@ -158,7 +161,7 @@ const Checkout = () => {
       theme: { color: '#f97316' },
       handler: async (paymentDetails) => {
         try {
-          const verificationResponse = await fetch('/api/payment/payment', {
+          const verificationResponse = await apiFetch('/api/payment/payment', {
             method: 'POST',
             headers: authHeaders,
             body: JSON.stringify(paymentDetails)
@@ -168,7 +171,7 @@ const Checkout = () => {
             showMessage(verification.message || 'Payment verification failed. Contact support before retrying payment.', true);
             return;
           }
-          dispatch(clearCart());
+          dispatch(removeCartItems(checkoutItemIds));
           setStage('complete');
         } catch (error) {
           console.error('Payment verification request failed:', error);
@@ -190,15 +193,15 @@ const Checkout = () => {
       navigate('/login');
       return;
     }
-    if (cartItems.length === 0) {
-      showMessage('Your cart is empty. Add products before checking out.', true);
+    if (selectedCartItems.length === 0) {
+      showMessage('Select at least one product in your cart before checking out.', true);
       return;
     }
 
     setIsSubmitting(true);
     showMessage('');
     try {
-      const response = await fetch('/api/orders/request-otp', {
+      const response = await apiFetch('/api/orders/request-otp', {
         method: 'POST',
         headers: authHeaders
       });
@@ -222,7 +225,7 @@ const Checkout = () => {
     setIsSubmitting(true);
     showMessage('');
     try {
-      const verificationResponse = await fetch('/api/orders/verify-otp', {
+      const verificationResponse = await apiFetch('/api/orders/verify-otp', {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({ otp })
@@ -233,13 +236,13 @@ const Checkout = () => {
         return;
       }
 
-      const orderResponse = await fetch('/api/orders', {
+      const orderResponse = await apiFetch('/api/orders', {
         method: 'POST',
         headers: authHeaders,
         body: JSON.stringify({
           orderAuthorization: verification.orderAuthorization,
           paymentMethod: 'Razorpay',
-          orderItems: cartItems.map((item) => ({
+          orderItems: selectedCartItems.map((item) => ({
             product: item._id || item.productId,
             qty: Number(item.qty)
           })),
@@ -313,6 +316,20 @@ const Checkout = () => {
     );
   }
 
+  if (selectedCartItems.length === 0 && stage !== 'payment') {
+    return (
+      <div className="checkout-container">
+        <h2>{t('checkout')}</h2>
+        <div className="checkout-content">
+          <div className="shipping-form">
+            <p role="status">{t('selectCartItemsFirst')}</p>
+            <button type="button" className="btn" onClick={() => navigate('/cart')}>{t('backToCart')}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="checkout-container">
       <h2>{t('checkout')}</h2>
@@ -338,11 +355,30 @@ const Checkout = () => {
               </label>
               <label className="shipping-field">
                 <span>{t('phone')}</span>
-                <input type="tel" autoComplete="tel" placeholder={t('phone')} required value={address.phone} onChange={(event) => setAddress({ ...address, phone: event.target.value })} />
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder={t('phone')}
+                  pattern="[6-9][0-9]{9}"
+                  maxLength={10}
+                  required
+                  value={address.phone}
+                  onChange={(event) => setAddress({ ...address, phone: event.target.value.replace(/\D/g, '').slice(0, 10) })}
+                />
               </label>
               <label className="shipping-field">
                 <span>{t('alternativePhone')} <small>{t('optional')}</small></span>
-                <input type="tel" autoComplete="tel-national" placeholder={t('alternativePhone')} value={address.altPhone || ''} onChange={(event) => setAddress({ ...address, altPhone: event.target.value })} />
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  placeholder={t('alternativePhone')}
+                  pattern="[6-9][0-9]{9}"
+                  maxLength={10}
+                  value={address.altPhone || ''}
+                  onChange={(event) => setAddress({ ...address, altPhone: event.target.value.replace(/\D/g, '').slice(0, 10) })}
+                />
               </label>
               <label className="shipping-field">
                 <span>{t('street')}</span>
@@ -430,7 +466,7 @@ const Checkout = () => {
               <div><span>{t('deliveryFee')}</span><strong>₹{shippingPrice.toFixed(2)}</strong></div>
               <div className="checkout-total-row"><span>{t('totalToPay')}</span><strong>₹{totalPrice.toFixed(2)}</strong></div>
             </div>
-            <button type="submit" className="btn" disabled={isSubmitting || cartItems.length === 0}>
+            <button type="submit" className="btn" disabled={isSubmitting || selectedCartItems.length === 0}>
               {isSubmitting
                 ? t('pleaseWait')
                 : stage === 'otp'

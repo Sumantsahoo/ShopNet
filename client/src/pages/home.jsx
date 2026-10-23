@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { useLanguage } from '../context/LanguageContext';
+import { apiFetch } from '../utils/api';
 
 const Home=() =>{
     const { pathname } = useLocation();
@@ -15,7 +16,7 @@ const Home=() =>{
     useEffect(() => {
         const fetchProducts=async() =>{
             try{
-                const res=await fetch('/api/products');
+                const res=await apiFetch('/api/products');
                 if (!res.ok) {
                     throw new Error(`Products request failed (${res.status})`);
                 }

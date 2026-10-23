@@ -26,7 +26,7 @@ const registerUser = async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const user = await User.create({ name, email: normalizedEmail, password: hashedPassword });
+        const user = await User.create({ name, email: normalizedEmail, password: hashedPassword, joinedAt: new Date() });
         return res.status(201).json({
             id: user._id,
             name: user.name,
@@ -54,6 +54,8 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email: normalizedEmail });
 
         if (user && (await bcrypt.compare(password, user.password))) {
+            user.lastLoginAt = new Date();
+            await user.save();
             return res.json({
                 id: user._id,
                 name: user.name,
@@ -184,8 +186,12 @@ const updateDefaultAddress = async (req, res) => {
         postalCode: typeof postalCode === 'string' ? postalCode.trim() : '',
         country: 'India'
     };
+    const validIndianMobile = (value) => /^[6-9]\d{9}$/.test(value);
     if ([defaultAddress.fullName, defaultAddress.phone, defaultAddress.street, defaultAddress.district, defaultAddress.state].some((value) => !value) || !/^\d{6}$/.test(defaultAddress.postalCode)) {
         return res.status(400).json({ message: 'Enter your name, phone, street, state, district, and valid six-digit PIN code.' });
+    }
+    if (!validIndianMobile(defaultAddress.phone) || (defaultAddress.altPhone && !validIndianMobile(defaultAddress.altPhone))) {
+        return res.status(400).json({ message: 'Phone numbers must be valid 10-digit Indian mobile numbers.' });
     }
 
     try {

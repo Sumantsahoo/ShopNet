@@ -350,8 +350,14 @@
     border-radius: 8px;
 }
 
-.ordered-products li > span {
+.ordered-products li > span:not(.wishlist-control) {
     flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.ordered-products li > .wishlist-control {
+    flex: 0 0 auto;
 }
 
 .ordered-products li {
@@ -394,6 +400,12 @@
     margin: 5px 0;
     color: #d4d4d8;
     line-height: 1.5;
+}
+
+.ordered-products .wishlist-button.is-compact {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
 }
 
 .order-card-footer {
@@ -501,6 +513,20 @@
     .order-detail-grid {
         grid-template-columns: 1fr;
         gap: 24px;
+    }
+
+    .ordered-products li {
+        gap: 8px;
+    }
+
+    .ordered-product-image {
+        width: 44px;
+        height: 44px;
+        flex-basis: 44px;
+    }
+
+    .ordered-products li > strong {
+        font-size: 0.85rem;
     }
 
     .order-timeline {

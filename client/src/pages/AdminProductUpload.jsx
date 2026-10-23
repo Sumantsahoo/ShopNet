@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 import '../styles/auth.css';
 
 const AdminProductUpload = () => {
@@ -51,7 +52,7 @@ const AdminProductUpload = () => {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/products', {
+            const response = await apiFetch('/api/products', {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${user.token}`

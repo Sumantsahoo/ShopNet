@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 import '../styles/auth.css';
 
 const Register = () => {
@@ -22,7 +23,7 @@ const Register = () => {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/authorite/register', {
+            const response = await apiFetch('/api/authorite/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })

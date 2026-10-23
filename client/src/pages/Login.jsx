@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 import '../styles/auth.css';
 
 const Login = () => {
@@ -28,7 +29,7 @@ const Login = () => {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/authorite/login', {
+            const response = await apiFetch('/api/authorite/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -59,7 +60,7 @@ const Login = () => {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/authorite/forgot-password/request-otp', {
+            const response = await apiFetch('/api/authorite/forgot-password/request-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -85,7 +86,7 @@ const Login = () => {
         setStatusMessage('');
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/authorite/forgot-password/reset', {
+            const response = await apiFetch('/api/authorite/forgot-password/reset', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, otp: resetOtp, newPassword })

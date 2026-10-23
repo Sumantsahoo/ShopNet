@@ -97,6 +97,10 @@ const createOrder = async (req, res) => {
         if (!shippingAddress?.fullName || !shippingAddress?.phone || !shippingAddress?.address || !shippingAddress?.city || !shippingAddress?.district || !shippingAddress?.state || !shippingAddress?.postalCode || !shippingAddress?.country || !paymentMethod) {
             return res.status(400).json({ message: 'Shipping address and payment method are required' });
         }
+        const validIndianMobile = (value) => typeof value === 'string' && /^[6-9]\d{9}$/.test(value);
+        if (!validIndianMobile(shippingAddress.phone) || (shippingAddress.altPhone && !validIndianMobile(shippingAddress.altPhone))) {
+            return res.status(400).json({ message: 'Phone numbers must be valid 10-digit Indian mobile numbers.' });
+        }
         if (typeof orderAuthorization !== 'string' || !/^[a-f0-9]{64}$/.test(orderAuthorization)) {
             return res.status(403).json({ message: 'Confirm your email with the order code before placing this order.' });
         }

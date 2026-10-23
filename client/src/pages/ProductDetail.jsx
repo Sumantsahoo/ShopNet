@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
 import { useLanguage } from '../context/LanguageContext';
 import WishlistButton from '../components/WishlistButton';
+import { apiFetch } from '../utils/api';
 import '../styles/product.css';
 
 const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='100%25' height='100%25' fill='%2327272a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23a1a1aa' font-family='sans-serif' font-size='20'%3ENo Image Available%3C/text%3E%3C/svg%3E";
@@ -19,7 +20,7 @@ const ProductDetail = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await fetch(`/api/products/${id}`);
+                const res = await apiFetch(`/api/products/${id}`);
                 const data = await res.json();
                 setProduct(data);
             } catch (error) {

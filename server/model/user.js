@@ -33,6 +33,8 @@ const userSchema=new mongoose.Schema({
         enum:['user','admin'],
         default:'user'
     },
+    joinedAt:{type:Date},
+    lastLoginAt:{type:Date},
     orderOtpHash: String,
     orderOtpExpiresAt: Date,
     orderOtpSentAt: Date,

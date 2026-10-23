@@ -5,6 +5,8 @@ import { DISTRICTS_BY_STATE, INDIAN_STATES_AND_UTS, lookupIndiaPin } from '../ut
 import { LANGUAGE_OPTIONS, useLanguage } from '../context/LanguageContext';
 import { useWishlist } from '../context/WishlistContext';
 import WishlistButton from '../components/WishlistButton';
+import { apiFetch } from '../utils/api';
+import AdminDashboard from '../admin/AdminDashboard';
 import '../styles/profile.css';
 
 const Profile = () => {
@@ -25,11 +27,11 @@ const Profile = () => {
     const [pinError, setPinError] = useState(false);
 
     useEffect(() => {
-        if (!user?.token) return undefined;
+        if (!user?.token || user.role === 'admin') return undefined;
         let cancelled = false;
         const loadProfile = async () => {
             try {
-                const response = await fetch('/api/authorite/profile', {
+                const response = await apiFetch('/api/authorite/profile', {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 const data = await response.json();
@@ -58,7 +60,7 @@ const Profile = () => {
         };
         loadProfile();
         return () => { cancelled = true; };
-    }, [user?.name, user?.token]);
+    }, [user?.name, user?.role, user?.token]);
 
     useEffect(() => {
         if (!/^\d{6}$/.test(defaultAddress.postalCode)) {
@@ -92,7 +94,7 @@ const Profile = () => {
         setAddressError(false);
         setAddressMessage('');
         try {
-            const response = await fetch('/api/authorite/profile', {
+            const response = await apiFetch('/api/authorite/profile', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -117,6 +119,10 @@ const Profile = () => {
     if (!user) {
         navigate('/login');
         return null;
+    }
+
+    if (user.role === 'admin') {
+        return <AdminDashboard />;
     }
 
     const handleLogout = () => {
@@ -187,8 +193,8 @@ const Profile = () => {
                     <form className="profile-address-form" onSubmit={saveAddress}>
                         <div className="profile-address-fields">
                             <label>{t('fullName')}<input autoComplete="name" required value={defaultAddress.fullName} onChange={(event) => setDefaultAddress({ ...defaultAddress, fullName: event.target.value })} /></label>
-                            <label>{t('phone')}<input type="tel" autoComplete="tel" required value={defaultAddress.phone} onChange={(event) => setDefaultAddress({ ...defaultAddress, phone: event.target.value })} /></label>
-                            <label>{t('alternativePhone')} <span className="profile-field-optional">{t('optional')}</span><input type="tel" autoComplete="tel-national" value={defaultAddress.altPhone || ''} onChange={(event) => setDefaultAddress({ ...defaultAddress, altPhone: event.target.value })} /></label>
+                            <label>{t('phone')}<input type="tel" inputMode="numeric" autoComplete="tel" pattern="[6-9][0-9]{9}" maxLength={10} required value={defaultAddress.phone} onChange={(event) => setDefaultAddress({ ...defaultAddress, phone: event.target.value.replace(/\D/g, '').slice(0, 10) })} /></label>
+                            <label>{t('alternativePhone')} <span className="profile-field-optional">{t('optional')}</span><input type="tel" inputMode="numeric" autoComplete="tel-national" pattern="[6-9][0-9]{9}" maxLength={10} value={defaultAddress.altPhone || ''} onChange={(event) => setDefaultAddress({ ...defaultAddress, altPhone: event.target.value.replace(/\D/g, '').slice(0, 10) })} /></label>
                             <label className="profile-address-wide">{t('street')}<input autoComplete="street-address" required value={defaultAddress.street} onChange={(event) => setDefaultAddress({ ...defaultAddress, street: event.target.value })} /></label>
                             <label>{t('state')}
                                 <select

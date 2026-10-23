@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
+import { apiFetch } from '../utils/api';
 
 const WishlistContext = createContext(null);
 
@@ -9,7 +10,7 @@ export const WishlistProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user?.token) {
+    if (!user?.token || user.role === 'admin') {
       setWishlistItems([]);
       setLoading(false);
       return undefined;
@@ -19,7 +20,7 @@ export const WishlistProvider = ({ children }) => {
     const fetchWishlist = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/authorite/wishlist', {
+        const response = await apiFetch('/api/authorite/wishlist', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const data = await response.json();
@@ -35,7 +36,7 @@ export const WishlistProvider = ({ children }) => {
 
     fetchWishlist();
     return () => { cancelled = true; };
-  }, [user?.token]);
+  }, [user?.role, user?.token]);
 
   const toggleWishlist = async (product) => {
     if (!user?.token) throw new Error('Sign in to save products to your wishlist.');
@@ -43,7 +44,7 @@ export const WishlistProvider = ({ children }) => {
     if (!productId) throw new Error('Product could not be saved.');
 
     const alreadySaved = wishlistItems.some((item) => (item._id || item.productId) === productId);
-    const response = await fetch(`/api/authorite/wishlist/${productId}`, {
+    const response = await apiFetch(`/api/authorite/wishlist/${productId}`, {
       method: alreadySaved ? 'DELETE' : 'POST',
       headers: { Authorization: `Bearer ${user.token}` }
     });
