@@ -11,6 +11,37 @@ const sendEmail = async (to, subject, text) => {
     throw new Error("Email sending is disabled in environment variables (EMAIL_ENABLED=false)");
   }
 
+  // 1. If RESEND_API_KEY is provided, send via HTTPS Port 443 (Render free tier friendly)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+          to: [to],
+          subject,
+          text,
+        }),
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.message || JSON.stringify(resData));
+      }
+
+      console.log("Email sent via Resend HTTPS API:", resData.id);
+      return resData;
+    } catch (apiError) {
+      console.error("Resend API failed:", apiError.message);
+      // Fall through to SMTP if configured
+    }
+  }
+
+  // 2. SMTP fallback (Nodemailer)
   const emailUser = process.env.EMAIL_USER ? process.env.EMAIL_USER.trim() : "";
   const emailPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, "").trim() : "";
 
@@ -20,31 +51,25 @@ const sendEmail = async (to, subject, text) => {
     );
   }
 
-  const isGmail = !process.env.SMTP_HOST || process.env.SMTP_HOST.includes("gmail");
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
 
-  const transportConfig = isGmail
-    ? {
-        service: "gmail",
-        auth: {
-          user: emailUser,
-          pass: emailPass,
-        },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000,
-      }
-    : {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 465),
-        secure: process.env.SMTP_SECURE !== "false",
-        auth: {
-          user: emailUser,
-          pass: emailPass,
-        },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 20000,
-      };
+  const transportConfig = {
+    host,
+    port,
+    secure,
+    auth: {
+      user: emailUser,
+      pass: emailPass,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  };
 
   const transporter = nodemailer.createTransport(transportConfig);
 
@@ -56,7 +81,7 @@ const sendEmail = async (to, subject, text) => {
       text,
     });
 
-    console.log("Email accepted:", result.messageId);
+    console.log("Email accepted via SMTP:", result.messageId);
     console.log("Accepted recipients:", result.accepted);
 
     if (result.rejected && result.rejected.length > 0) {

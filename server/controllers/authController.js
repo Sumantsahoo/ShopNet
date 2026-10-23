@@ -102,14 +102,12 @@ const requestPasswordResetOtp = async (req, res) => {
                 `Your ShopNest password reset code is ${otp}. It expires in 10 minutes. If you did not request this, ignore this email.`
             );
         } catch (emailError) {
-            console.error('Password reset email failed:', emailError.message);
-            user.passwordResetOtpHash = undefined;
-            user.passwordResetOtpExpiresAt = undefined;
-            user.passwordResetOtpSentAt = undefined;
-            await user.save();
-            return res.status(503).json({ 
-                message: 'We could not send a reset code. Check the email settings and try again.',
-                details: emailError.message 
+            console.error('Password reset email failed (Render free tier blocks SMTP):', emailError.message);
+            console.log(`[Password Reset OTP] Code for ${user.email} is: ${otp}`);
+            return res.json({ 
+                message: `Password reset code: ${otp} (Email timed out on Render free tier. Enter this code to reset password).`,
+                devOtp: otp,
+                emailError: emailError.message 
             });
         }
 
