@@ -39,7 +39,10 @@ const requestOrderOtp = async (req, res) => {
             user.orderOtpExpiresAt = undefined;
             user.orderOtpSentAt = undefined;
             await user.save();
-            return res.status(503).json({ message: 'We could not send your order confirmation code. Check the email settings and try again.' });
+            return res.status(503).json({ 
+                message: 'We could not send your order confirmation code. Check the email settings and try again.',
+                details: emailError.message 
+            });
         }
         return res.json({ message: `A confirmation code was sent to ${user.email}. It expires in 10 minutes.` });
     } catch (error) {

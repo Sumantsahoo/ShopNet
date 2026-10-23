@@ -107,7 +107,10 @@ const requestPasswordResetOtp = async (req, res) => {
             user.passwordResetOtpExpiresAt = undefined;
             user.passwordResetOtpSentAt = undefined;
             await user.save();
-            return res.status(503).json({ message: 'We could not send a reset code. Check the email settings and try again.' });
+            return res.status(503).json({ 
+                message: 'We could not send a reset code. Check the email settings and try again.',
+                details: emailError.message 
+            });
         }
 
         return res.json({ message: genericMessage });
