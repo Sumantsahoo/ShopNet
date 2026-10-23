@@ -31,12 +31,12 @@ app.use('/api/analytics',require('./routes/analyticsRoutes'));
  //server fronted in production
  if(process.env.NODE_ENV==='production'){
     app.use(express.static(path.join(__dirname,'../client/build')));
-    app.get('*',(req,res)=>{
+    app.get('/{*splat}',(req,res)=>{
         res.sendFile(path.resolve(__dirname,'../client/build/index.html'));
     });
  } else{
-    app.get('/',(req,res)=>{
-        res.send('ShopNest Api is running on Development mode...')
+    app.get('/api',(req,res)=>{
+        res.send('ShopNet API is running in development mode...')
     })
  }
 
