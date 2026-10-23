@@ -101,17 +101,18 @@ const requestPasswordResetOtp = async (req, res) => {
                 'ShopNest password reset code',
                 `Your ShopNest password reset code is ${otp}. It expires in 10 minutes. If you did not request this, ignore this email.`
             );
+            return res.json({ message: `If an account exists for ${email}, a password reset code was sent to your email. Check your inbox and spam folder.` });
         } catch (emailError) {
-            console.error('Password reset email failed (Render free tier blocks SMTP):', emailError.message);
-            console.log(`[Password Reset OTP] Code for ${user.email} is: ${otp}`);
-            return res.json({ 
-                message: `Password reset code: ${otp} (Email timed out on Render free tier. Enter this code to reset password).`,
-                devOtp: otp,
-                emailError: emailError.message 
+            console.error('Password reset email failed:', emailError.message);
+            user.passwordResetOtpHash = undefined;
+            user.passwordResetOtpExpiresAt = undefined;
+            user.passwordResetOtpSentAt = undefined;
+            await user.save();
+            return res.status(503).json({ 
+                message: `Could not send reset code to ${user.email}. Add RESEND_API_KEY to your Render environment variables to send emails over HTTPS.`,
+                error: emailError.message 
             });
         }
-
-        return res.json({ message: genericMessage });
     } catch (error) {
         console.error('Password reset code request failed:', error.message);
         return res.status(500).json({ message: 'Could not request a password reset code. Please try again.' });

@@ -11,7 +11,7 @@ const sendEmail = async (to, subject, text) => {
     throw new Error("Email sending is disabled in environment variables (EMAIL_ENABLED=false)");
   }
 
-  // 1. If RESEND_API_KEY is provided, send via HTTPS Port 443 (Render free tier friendly)
+  // 1. RESEND API over HTTPS Port 443 (Recommended for Render)
   if (process.env.RESEND_API_KEY) {
     try {
       const response = await fetch("https://api.resend.com/emails", {
@@ -21,7 +21,7 @@ const sendEmail = async (to, subject, text) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+          from: process.env.EMAIL_FROM || "ShopNest <onboarding@resend.dev>",
           to: [to],
           subject,
           text,
@@ -33,21 +33,55 @@ const sendEmail = async (to, subject, text) => {
         throw new Error(resData.message || JSON.stringify(resData));
       }
 
-      console.log("Email sent via Resend HTTPS API:", resData.id);
+      console.log("Email delivered via Resend API (HTTPS):", resData.id);
       return resData;
     } catch (apiError) {
-      console.error("Resend API failed:", apiError.message);
-      // Fall through to SMTP if configured
+      console.error("Resend API error:", apiError.message);
+      throw apiError;
     }
   }
 
-  // 2. SMTP fallback (Nodemailer)
+  // 2. BREVO API over HTTPS Port 443
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": process.env.BREVO_API_KEY.trim(),
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          sender: {
+            name: "ShopNest",
+            email: process.env.EMAIL_FROM || process.env.EMAIL_USER || "sumantkusahoo06@gmail.com",
+          },
+          to: [{ email: to }],
+          subject,
+          textContent: text,
+        }),
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData.message || JSON.stringify(resData));
+      }
+
+      console.log("Email delivered via Brevo API (HTTPS):", resData.messageId);
+      return resData;
+    } catch (apiError) {
+      console.error("Brevo API error:", apiError.message);
+      throw apiError;
+    }
+  }
+
+  // 3. SMTP (Nodemailer) - Works on local and cloud servers with open SMTP
   const emailUser = process.env.EMAIL_USER ? process.env.EMAIL_USER.trim() : "";
   const emailPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, "").trim() : "";
 
   if (isPlaceholder(emailUser) || isPlaceholder(emailPass)) {
     throw new Error(
-      "EMAIL_USER or EMAIL_PASS is not configured in environment variables."
+      "No email service configured. Please provide RESEND_API_KEY, BREVO_API_KEY, or EMAIL_USER/EMAIL_PASS."
     );
   }
 
@@ -90,7 +124,7 @@ const sendEmail = async (to, subject, text) => {
 
     return result;
   } catch (error) {
-    console.error("Email sending failed:", error.code, error.message);
+    console.error("SMTP sending failed:", error.code, error.message);
     throw error;
   }
 };
