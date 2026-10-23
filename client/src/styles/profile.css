@@ -1,0 +1,449 @@
+.profile-page {
+    width: min(100% - 32px, 850px);
+    min-height: 70vh;
+    margin: 0 auto;
+    padding: 44px 0 64px;
+}
+
+.profile-heading {
+    margin-bottom: 26px;
+}
+
+.profile-heading > span {
+    color: #fb923c;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+
+.profile-heading h1 {
+    margin: 8px 0;
+    font-size: clamp(2rem, 5vw, 2.7rem);
+}
+
+.profile-heading p {
+    margin: 0;
+    color: #a1a1aa;
+}
+
+.profile-card,
+.profile-action-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 24px;
+    color: #fafafa;
+    background: linear-gradient(145deg, #18181b, #111113);
+    border: 1px solid #303036;
+    border-radius: 16px;
+}
+
+.profile-avatar {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+    place-items: center;
+    color: #fff;
+    background: linear-gradient(135deg, #f97316, #c2410c);
+    border-radius: 50%;
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.profile-identity h2 {
+    margin: 0 0 6px;
+    font-size: 1.25rem;
+}
+
+.profile-identity p {
+    margin: 0;
+    color: #a1a1aa;
+    overflow-wrap: anywhere;
+}
+
+.profile-role {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 9px;
+    color: #fdba74;
+    background: rgba(124, 45, 18, 0.35);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    text-transform: capitalize;
+}
+
+.profile-address-card {
+    margin-top: 20px;
+    padding: clamp(20px, 4vw, 30px);
+    color: #fafafa;
+    background: linear-gradient(145deg, #18181b, #111113);
+    border: 1px solid #303036;
+    border-radius: 12px;
+}
+
+.profile-address-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.profile-address-heading span {
+    color: #fb923c;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.profile-address-heading h2 {
+    margin: 6px 0 0;
+    font-size: 1.25rem;
+}
+
+.profile-address-heading p {
+    max-width: 310px;
+    margin: 0;
+    color: #a1a1aa;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.profile-address-edit,
+.profile-address-cancel {
+    min-height: 40px;
+    padding: 0 14px;
+    color: #fed7aa;
+    background: transparent;
+    border: 1px solid #9a3412;
+    border-radius: 5px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-address-summary {
+    display: grid;
+    gap: 7px;
+    padding: 16px;
+    color: #d4d4d8;
+    background: #09090b;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.profile-address-summary strong {
+    color: #fafafa;
+    font-size: 1rem;
+}
+
+.profile-address-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.profile-address-fields label {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    color: #d4d4d8;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.profile-field-optional {
+    display: inline;
+    color: #a1a1aa;
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.profile-address-fields input,
+.profile-address-fields select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 11px;
+    color: #fafafa;
+    background: #09090b;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 400;
+}
+
+.profile-address-fields input:focus,
+.profile-address-fields select:focus {
+    border-color: #f97316;
+    outline: 2px solid rgba(249, 115, 22, 0.2);
+}
+
+.profile-address-fields select:disabled {
+    color: #71717a;
+    cursor: not-allowed;
+}
+
+.profile-address-wide {
+    grid-column: 1 / -1;
+}
+
+.profile-pin-message {
+    color: #86efac;
+    font-size: 0.78rem;
+    font-weight: 400;
+}
+
+.profile-pin-message.is-error,
+.profile-address-status.is-error {
+    color: #fca5a5;
+}
+
+.profile-address-status {
+    margin: 14px 0 0;
+    color: #86efac;
+    font-size: 0.88rem;
+}
+
+.profile-address-save {
+    min-height: 42px;
+    margin-top: 18px;
+    padding: 0 16px;
+    color: #fff;
+    background: #ea580c;
+    border: 0;
+    border-radius: 5px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-address-save:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.profile-address-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.profile-address-cancel {
+    color: #d4d4d8;
+    border-color: #52525b;
+}
+
+.profile-address-cancel:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.profile-actions {
+    display: grid;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.profile-wishlist {
+    margin-top: 20px;
+    padding: clamp(20px, 4vw, 30px);
+    color: #fafafa;
+    background: linear-gradient(145deg, #18181b, #111113);
+    border: 1px solid #303036;
+    border-radius: 12px;
+}
+
+.profile-wishlist-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.profile-wishlist-heading span {
+    color: #fb923c;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.profile-wishlist-heading h2 {
+    margin: 6px 0 0;
+    font-size: 1.25rem;
+}
+
+.profile-wishlist-heading > strong {
+    display: grid;
+    width: 36px;
+    aspect-ratio: 1;
+    place-items: center;
+    color: #fecdd3;
+    background: #4c1d2b;
+    border-radius: 50%;
+}
+
+.profile-wishlist-empty {
+    margin: 0;
+    color: #a1a1aa;
+}
+
+.profile-wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.profile-wishlist-item {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    background: #09090b;
+    border: 1px solid #3f3f46;
+    border-radius: 8px;
+}
+
+.profile-wishlist-item > a {
+    display: grid;
+    gap: 8px;
+    padding-bottom: 12px;
+    color: #fafafa;
+    text-decoration: none;
+}
+
+.profile-wishlist-item img {
+    width: 100%;
+    aspect-ratio: 1.2;
+    object-fit: cover;
+    background: #18181b;
+}
+
+.profile-wishlist-item > a > span,
+.profile-wishlist-item > a > strong {
+    margin: 0 12px;
+    overflow-wrap: anywhere;
+}
+
+.profile-wishlist-item > a > strong {
+    color: #fb923c;
+}
+
+.profile-wishlist-item > .wishlist-control {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.profile-language-control {
+    display: grid;
+    min-width: 155px;
+    gap: 7px;
+    color: #d4d4d8;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.profile-language-control select {
+    min-height: 42px;
+    padding: 0 10px;
+    color: #fafafa;
+    background: #09090b;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.profile-action-card {
+    text-decoration: none;
+    transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.profile-action-card:hover {
+    border-color: #f97316;
+    transform: translateY(-2px);
+}
+
+.profile-action-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    color: #fb923c;
+    background: #27272a;
+    border-radius: 12px;
+    font-size: 1.3rem;
+}
+
+.profile-action-card > span:nth-child(2) {
+    display: grid;
+    gap: 5px;
+    flex: 1;
+}
+
+.profile-action-card small {
+    color: #a1a1aa;
+    line-height: 1.4;
+}
+
+.profile-action-arrow {
+    color: #71717a;
+    font-size: 1.6rem;
+}
+
+.profile-logout {
+    justify-self: start;
+    padding: 10px 14px;
+    color: #fca5a5;
+    background: transparent;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    border-radius: 8px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.profile-logout:hover {
+    background: rgba(127, 29, 29, 0.25);
+    border-color: #f87171;
+}
+
+@media (max-width: 520px) {
+    .profile-page {
+        width: min(100% - 24px, 850px);
+        padding-top: 28px;
+    }
+
+    .profile-card,
+    .profile-action-card {
+        padding: 18px;
+    }
+
+    .profile-address-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .profile-address-edit {
+        width: 100%;
+    }
+
+    .profile-address-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-wishlist-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .profile-address-wide {
+        grid-column: auto;
+    }
+
+    .profile-address-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+}

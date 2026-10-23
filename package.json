@@ -1,0 +1,26 @@
+{
+  "name": "shopnest-full-stack",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [
+    "sumant"
+  ],
+  "license": "ISC",
+  "author": "sumant",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && npm --prefix server install && npm --prefix client install",
+    "start": "npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client start",
+    "build": "npm --prefix client run build",
+    "start:server":"npm --prefix server run dev",
+    "start:client": "npm --prefix client start",
+    "seed": "npm --prefix server run seed"
+  },
+  "dependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
