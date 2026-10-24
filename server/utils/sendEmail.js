@@ -21,7 +21,7 @@ const sendEmail = async (to, subject, text) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.EMAIL_FROM || "ShopNest <onboarding@resend.dev>",
+          from:  "ShopNest <onboarding@resend.dev>",
           to: [to],
           subject,
           text,
