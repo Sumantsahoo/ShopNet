@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const Order = require('../model/order');
 const User = require('../model/user');
 const sendEmail = require('../utils/sendEmail');
+const markOrderPaid = require('../utils/markOrderPaid');
 
 const safeCompareHex = (left, right) => {
     const leftBuffer = Buffer.from(left, 'hex');
@@ -75,35 +76,35 @@ const verifyPayment = async (req, res) => {
             return res.status(400).json({ message: 'Payment verification failed' });
         }
 
-        if (order.isPaid) {
-            return res.json({ message: 'Payment was already verified', order });
-        }
-
-        order.isPaid = true;
-        order.paidAt = new Date();
-        order.status = 'processing';
-        order.processingAt = order.processingAt || order.paidAt;
-        order.paymentConfirmation = 'razorpay';
-        order.manualPaymentReference = undefined;
-        order.paymentConfirmedBy = undefined;
-        order.paymentResult = {
+        const paymentResult = {
             razorpayPaymentId: razorpay_payment_id,
             razorpaySignature: razorpay_signature
         };
-        await order.save();
+        const { order: paidOrder, alreadyPaid } = await markOrderPaid(order, {
+            paymentConfirmation: 'razorpay',
+            manualPaymentReference: undefined,
+            paymentConfirmedBy: undefined,
+            paymentResult
+        });
+        if (alreadyPaid) {
+            return res.json({ message: 'Payment was already verified', order: paidOrder });
+        }
 
         try {
-            const user = await User.findById(order.user).select('email');
+            const user = await User.findById(paidOrder.user).select('email');
             if (user?.email) {
-                await sendEmail(user.email, 'Order Confirmation', `Your payment was successful and your order with ID ${order._id} is confirmed. Total amount: INR ${order.totalPrice}.`);
+                await sendEmail(user.email, 'Order Confirmation', `Your payment was successful and your order with ID ${paidOrder._id} is confirmed. Total amount: INR ${paidOrder.totalPrice}.`);
             }
         } catch (emailError) {
             console.error('Paid order confirmation email failed:', emailError.message);
         }
 
-        return res.json({ message: 'Payment verified successfully', order });
+        return res.json({ message: 'Payment verified successfully', order: paidOrder });
     } catch (error) {
         console.error('Razorpay payment verification failed:', error.message);
+        if (error.message.includes('stock') || error.message.includes('inventory')) {
+            return res.status(409).json({ message: error.message });
+        }
         return res.status(500).json({ message: 'Unable to verify payment' });
     }
 };

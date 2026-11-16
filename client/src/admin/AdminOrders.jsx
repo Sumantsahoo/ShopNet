@@ -4,7 +4,15 @@ import { AuthContext } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
 import '../styles/orders.css';
 
-const orderStatuses = ['pending', 'processing', 'shipped'];
+const orderStatuses = ['pending', 'processing', 'shipped', 'in_transit', 'out_for_delivery', 'delivered'];
+const orderStatusLabels = {
+    pending: 'Payment pending',
+    processing: 'Packaging',
+    shipped: 'Shipped',
+    in_transit: 'On the way',
+    out_for_delivery: 'Out for delivery',
+    delivered: 'Delivered'
+};
 
 const AdminOrders = () => {
     const { user } = useContext(AuthContext);
@@ -164,7 +172,7 @@ const AdminOrders = () => {
             <header className="orders-heading">
                 <span>ADMINISTRATION</span>
                 <h1>Manage orders</h1>
-                <p>Verify payments, then approve and record delivery for paid orders.</p>
+                <p>Verify payments and update each paid order as it moves through fulfillment.</p>
             </header>
 
             {error && <p className="orders-error" role="alert">{error}</p>}
@@ -195,7 +203,7 @@ const AdminOrders = () => {
                                                 ? 'Paid'
                                                 : 'Payment not confirmed'}
                                 </span>
-                                <span className="order-status">{order.status}</span>
+                                <span className="order-status">{orderStatusLabels[order.status] || order.status}</span>
                             </div>
                         </div>
 
@@ -210,7 +218,7 @@ const AdminOrders = () => {
                                                 src={item.product?.imageUrl || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='100%25' height='100%25' fill='%2327272a'/%3E%3C/svg%3E"}
                                                 alt={item.name}
                                             />
-                                            <span>{item.name} × {item.qty}</span>
+                                            <span>{item.product?.brand ? `${item.product.brand} · ` : ''}{item.name} × {item.qty}</span>
                                             <strong>₹{(item.price * item.qty).toFixed(2)}</strong>
                                         </li>
                                     ))}
@@ -315,10 +323,9 @@ const AdminOrders = () => {
                                 >
                                     {orderStatuses.map((status) => (
                                         <option key={status} value={status} disabled={!order.isPaid && status !== 'pending'}>
-                                            {status}
+                                            {orderStatusLabels[status]}
                                         </option>
                                     ))}
-                                    {order.status === 'delivered' && <option value="delivered">delivered</option>}
                                 </select>
                             </label>
                             {!order.isDelivered && (

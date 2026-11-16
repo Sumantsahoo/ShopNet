@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Detection System - Presentation Slides</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --accent-cyan: #06b6d4;
+      --accent-sky: #38bdf8;
+      --accent-blue: #0284c7;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --badge-bg: rgba(6, 182, 212, 0.15);
+      --badge-border: rgba(6, 182, 212, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      border: 1px solid var(--card-border);
+    }
+
+    .toolbar button {
+      background: #334155;
+      color: var(--text-light);
+      border: none;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .toolbar button:hover {
+      background: var(--accent-cyan);
+      color: #041019;
+    }
+
+    .slide-container {
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      padding: 48px 56px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .slide {
+      display: none;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .slide.active {
+      display: flex;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Headers */
+    .slide-header {
+      margin-bottom: 24px;
+    }
+    .slide-subtitle {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent-cyan);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .slide-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-light);
+      letter-spacing: -0.5px;
+    }
+
+    /* Grids & Cards */
+    .grid-2x5 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .grid-2x3 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      height: 100%;
+    }
+    .grid-5col {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-sky);
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Title Slide Specifics */
+    .title-banner {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--badge-bg);
+      border: 1px solid var(--badge-border);
+      color: var(--accent-sky);
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+    }
+    .main-hero-title {
+      font-size: 50px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #ffffff 40%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+    .hero-sub {
+      font-size: 20px;
+      color: var(--text-muted);
+      max-width: 800px;
+      margin-bottom: 36px;
+    }
+    .details-box {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .detail-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+    }
+    .detail-val {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* List Rows */
+    .list-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .list-row {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .list-row-bullet {
+      color: var(--accent-cyan);
+      font-weight: 800;
+      font-size: 18px;
+    }
+    .list-row-title {
+      font-weight: 700;
+      color: var(--accent-sky);
+      font-size: 15px;
+      min-width: 220px;
+    }
+    .list-row-desc {
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    /* Step Card */
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .step-number {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .step-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-sky);
+      margin-bottom: 8px;
+    }
+    .step-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Screenshot placeholder */
+    .screenshot-box {
+      background: rgba(30, 41, 59, 0.5);
+      border: 2px dashed #0284c7;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .screenshot-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+    .screenshot-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .screenshot-note {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Nav bar at bottom */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .nav-btn {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      color: var(--text-light);
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .nav-btn:hover {
+      background: #334155;
+    }
+
+    .key-hint {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .key-badge {
+      background: #334155;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <span class="key-hint">Navigate: <span class="key-badge">←</span> <span class="key-badge">→</span> or <span class="key-badge">Space</span></span>
+    <button onclick="prevSlide()">❮ Prev</button>
+    <span id="counter" style="font-size: 13px; font-weight: 700; color: var(--accent-sky); min-width: 45px; text-align: center;">1 / 13</span>
+    <button onclick="nextSlide()">Next ❯</button>
+  </div>
+
+  <div class="slide-container" id="slideDeck">
+    
+    <!-- Slide 1: Title -->
+    <div class="slide active">
+      <div>
+        <span class="title-banner">MAJOR PROJECT PRESENTATION</span>
+        <h1 class="main-hero-title">WEATHER DETECTION SYSTEM</h1>
+        <p class="hero-sub">A Modern, Responsive Web Application Developed with React.js and OpenWeatherMap API</p>
+      </div>
+
+      <div class="details-box">
+        <div class="detail-item">
+          <span class="detail-label">SUBMITTED BY</span>
+          <span class="detail-val">Sumant Kumar Sahoo</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">BRANCH</span>
+          <span class="detail-val">CSE (AI)</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">ROLL NO</span>
+          <span class="detail-val">69</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">SECTION</span>
+          <span class="detail-val">CSE AI Genius</span>
+        </div>
+        <div class="detail-item" style="grid-column: span 2;">
+          <span class="detail-label">ORGANIZATION</span>
+          <span class="detail-val" style="color: var(--accent-sky);">GIFT Autonomous College</span>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>GIFT Autonomous College &bull; Department of Computer Science & Engineering (AI)</span>
+        <span>Slide 1 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 2: Contents -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">AGENDA</div>
+        <h2 class="slide-title">Table of Contents</h2>
+      </div>
+
+      <div class="grid-2x5">
+        <div class="card"><span class="card-title">1. Introduction</span><span class="card-desc">Overview and project context</span></div>
+        <div class="card"><span class="card-title">6. Summary of Development</span><span class="card-desc">Step-by-step engineering roadmap</span></div>
+        <div class="card"><span class="card-title">2. Project Overview</span><span class="card-desc">Technology stack and data flow</span></div>
+        <div class="card"><span class="card-title">7. Conclusion</span><span class="card-desc">Core achievements and key learnings</span></div>
+        <div class="card"><span class="card-title">3. Objectives</span><span class="card-desc">Core goals and implementation focus</span></div>
+        <div class="card"><span class="card-title">8. Recommendations</span><span class="card-desc">Immediate enhancements & optimizations</span></div>
+        <div class="card"><span class="card-title">4. Results and Findings</span><span class="card-desc">App features and output evaluation</span></div>
+        <div class="card"><span class="card-title">9. Future Directions</span><span class="card-desc">Long-term vision and extended features</span></div>
+        <div class="card"><span class="card-title">5. Analysis and Discussion</span><span class="card-desc">Technical breakdown and architecture</span></div>
+        <div class="card"><span class="card-title">10. Project Photos & Links</span><span class="card-desc">Screenshots, live demo & repository links</span></div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 2 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 3: Introduction -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">BACKGROUND & CONTEXT</div>
+        <h2 class="slide-title">1. Introduction</h2>
+      </div>
+
+      <div class="grid-3col">
+        <div class="card" style="justify-content: center; padding: 32px 24px;">
+          <div style="font-size: 32px; margin-bottom: 12px;">🌐</div>
+          <h3 class="card-title" style="font-size: 20px;">Web-Based Solution</h3>
+          <p class="card-desc" style="font-size: 15px; margin-top: 10px;">The Weather Detection System is a responsive client-side single page web application developed using <strong>React.js</strong> and the <strong>OpenWeatherMap API</strong>.</p>
+        </div>
+
+        <div class="card" style="justify-content: center; padding: 32px 24px;">
+          <div style="font-size: 32px; margin-bottom: 12px;">🔍</div>
+          <h3 class="card-title" style="font-size: 20px;">City-Centric Search</h3>
+          <p class="card-desc" style="font-size: 15px; margin-top: 10px;">Allows users across the globe to search for any specific city and view its real-time atmospheric metrics without refreshing the web browser.</p>
+        </div>
+
+        <div class="card" style="justify-content: center; padding: 32px 24px;">
+          <div style="font-size: 32px; margin-bottom: 12px;">📊</div>
+          <h3 class="card-title" style="font-size: 20px;">Real-Time JSON Pipeline</h3>
+          <p class="card-desc" style="font-size: 15px; margin-top: 10px;">Retrieves meteorological payloads from third-party REST endpoints and cleanly renders temperature, humidity, and atmospheric conditions on an intuitive UI.</p>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 3 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 4: Project Overview -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">TECH STACK & ARCHITECTURE</div>
+        <h2 class="slide-title">2. Project Overview</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+        <div class="list-rows">
+          <div class="list-row"><span class="list-row-bullet">■</span><span class="list-row-title">Project Name</span><span class="list-row-desc">Weather Detection System</span></div>
+          <div class="list-row"><span class="list-row-bullet">■</span><span class="list-row-title">Frontend Framework</span><span class="list-row-desc">React.js (SPA Architecture)</span></div>
+          <div class="list-row"><span class="list-row-bullet">■</span><span class="list-row-title">UI Component Library</span><span class="list-row-desc">Material UI (MUI Components & Icons)</span></div>
+          <div class="list-row"><span class="list-row-bullet">■</span><span class="list-row-title">External Data Source</span><span class="list-row-desc">OpenWeatherMap REST API</span></div>
+          <div class="list-row"><span class="list-row-bullet">■</span><span class="list-row-title">Programming Language</span><span class="list-row-desc">JavaScript (Modern ES6+)</span></div>
+          <div class="list-row"><span class="list-row-bullet">■</span><span class="list-row-title">Primary Function</span><span class="list-row-desc">Live weather search by global city name</span></div>
+        </div>
+
+        <div class="card" style="justify-content: center; padding: 28px; border-color: var(--accent-blue);">
+          <h3 style="font-size: 22px; color: var(--accent-cyan); font-weight: 800; margin-bottom: 14px;">How It Operates</h3>
+          <p style="font-size: 15px; color: var(--text-light); line-height: 1.6; margin-bottom: 16px;">
+            The application sends an asynchronous HTTP GET request to the OpenWeatherMap API whenever a user submits a city query.
+          </p>
+          <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+            Upon receiving structured meteorological data in JSON format, React dynamically parses properties (temperature, feels-like, humidity, condition) and re-renders the UI with zero delay.
+          </p>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 4 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 5: Objectives -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">TARGET GOALS</div>
+        <h2 class="slide-title">3. Project Objectives</h2>
+      </div>
+
+      <div class="grid-2x3">
+        <div class="card"><span class="card-title">1. Intuitive Application</span><span class="card-desc">To develop a clean, accessible, and user-friendly weather detection application for all users.</span></div>
+        <div class="card"><span class="card-title">2. React.js Mastery</span><span class="card-desc">To learn and implement core React concepts such as functional components, JSX, and state hooks.</span></div>
+        <div class="card"><span class="card-title">3. API Integration</span><span class="card-desc">To connect and integrate the external OpenWeatherMap REST API with a React single-page frontend.</span></div>
+        <div class="card"><span class="card-title">4. Real-Time Fetching</span><span class="card-desc">To fetch and display real-time weather information accurately based on city name queries.</span></div>
+        <div class="card"><span class="card-title">5. Comprehensive Metrics</span><span class="card-desc">To display temperature, feels-like temperature, humidity percentage, and weather conditions clearly.</span></div>
+        <div class="card"><span class="card-title">6. JSON Lifecycle</span><span class="card-desc">To understand asynchronous API requests, promise handling, and JSON response deserialization.</span></div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 5 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 6: Results and Findings -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">OUTCOMES & FINDINGS</div>
+        <h2 class="slide-title">4. Results and Findings</h2>
+      </div>
+
+      <div class="grid-2x3">
+        <div class="card"><span class="card-title" style="color: var(--accent-cyan);">✓ Successful Implementation</span><span class="card-desc">Successfully developed, tested, and deployed an interactive React-based weather application.</span></div>
+        <div class="card"><span class="card-title" style="color: var(--accent-cyan);">✓ Instant City Search</span><span class="card-desc">Users can enter any worldwide city name and receive instantaneous meteorological metrics.</span></div>
+        <div class="card"><span class="card-title" style="color: var(--accent-cyan);">✓ Robust API Communication</span><span class="card-desc">The application reliably fetches live weather data through OpenWeatherMap REST endpoints.</span></div>
+        <div class="card"><span class="card-title" style="color: var(--accent-cyan);">✓ Structured Data Handling</span><span class="card-desc">API responses are received in JSON format and parsed cleanly into state management objects.</span></div>
+        <div class="card"><span class="card-title" style="color: var(--accent-cyan);">✓ Clear Metric Presentation</span><span class="card-desc">Real-time weather details and conditions are rendered in high fidelity across UI cards.</span></div>
+        <div class="card"><span class="card-title" style="color: var(--accent-cyan);">✓ Deep Practical Learning</span><span class="card-desc">Acquired end-to-end practical knowledge in frontend development and asynchronous API integration.</span></div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 6 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 7: Analysis and Discussion -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">TECHNICAL EVALUATION</div>
+        <h2 class="slide-title">5. Analysis and Discussion</h2>
+      </div>
+
+      <div class="list-rows">
+        <div class="list-row"><span class="list-row-bullet">✦</span><span class="list-row-title">Component Reusability</span><span class="list-row-desc">React.js facilitates modular UI components (Search Box, Info Card, Header) that manage their own state cleanly.</span></div>
+        <div class="list-row"><span class="list-row-bullet">✦</span><span class="list-row-title">Design Consistency</span><span class="list-row-desc">Material UI provides pre-built, accessible components and icon sets that guarantee modern aesthetic polish.</span></div>
+        <div class="list-row"><span class="list-row-bullet">✦</span><span class="list-row-title">REST Query Optimization</span><span class="list-row-desc">OpenWeatherMap API accurately returns location-based weather datasets via URL query parameters.</span></div>
+        <div class="list-row"><span class="list-row-bullet">✦</span><span class="list-row-title">State-Driven Updates</span><span class="list-row-desc">The parsed JSON payload binds directly to React state, initiating instantaneous Virtual DOM re-rendering.</span></div>
+        <div class="list-row"><span class="list-row-bullet">✦</span><span class="list-row-title">Fault-Tolerant Requests</span><span class="list-row-desc">Proper request validation and error boundary checks are critical for gracefully handling typos and API rate limits.</span></div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 7 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 8: Summary of Development -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">DEVELOPMENT LIFECYCLE</div>
+        <h2 class="slide-title">6. Summary of Development</h2>
+      </div>
+
+      <div class="grid-5col">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-title">Planning</div>
+          <div class="step-desc">Identified user requirements, core features, and architectural scope.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-title">Designing</div>
+          <div class="step-desc">Crafted clean UI components using React.js and Material UI layout tools.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-title">Integration</div>
+          <div class="step-desc">Connected endpoints with OpenWeatherMap API using secure keys.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <div class="step-title">Data Fetching</div>
+          <div class="step-desc">Implemented async fetch routines to capture and serialize JSON responses.</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">5</div>
+          <div class="step-title">Testing</div>
+          <div class="step-desc">Verified accuracy across diverse cities and handled edge-case inputs.</div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 8 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 9: Conclusion -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">PROJECT SUMMARY & TAKEAWAYS</div>
+        <h2 class="slide-title">7. Conclusion</h2>
+      </div>
+
+      <div class="card" style="padding: 32px 36px; height: 100%; justify-content: space-around;">
+        <div style="display: flex; gap: 16px; align-items: flex-start;">
+          <span style="font-size: 20px; color: var(--accent-cyan); font-weight: 800;">[1]</span>
+          <div>
+            <h4 style="font-size: 18px; color: #fff; margin-bottom: 6px;">Demonstration of React & API Synergy</h4>
+            <p style="font-size: 15px; color: var(--text-muted); line-height: 1.5;">The Weather Detection System successfully demonstrates how React.js and third-party REST APIs collaborate to create performant single-page applications.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; align-items: flex-start;">
+          <span style="font-size: 20px; color: var(--accent-cyan); font-weight: 800;">[2]</span>
+          <div>
+            <h4 style="font-size: 18px; color: #fff; margin-bottom: 6px;">Seamless Meteorological Search</h4>
+            <p style="font-size: 15px; color: var(--text-muted); line-height: 1.5;">It provides instantaneous access to crucial weather metrics by querying city names with immediate visual feedback.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; align-items: flex-start;">
+          <span style="font-size: 20px; color: var(--accent-cyan); font-weight: 800;">[3]</span>
+          <div>
+            <h4 style="font-size: 18px; color: #fff; margin-bottom: 6px;">Practical Skill Acquisition</h4>
+            <p style="font-size: 15px; color: var(--text-muted); line-height: 1.5;">Gained hands-on proficiency in React component lifecycle, useState/useEffect hooks, asynchronous network requests, and Material UI styling.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; align-items: flex-start;">
+          <span style="font-size: 20px; color: var(--accent-cyan); font-weight: 800;">[4]</span>
+          <div>
+            <h4 style="font-size: 18px; color: #fff; margin-bottom: 6px;">Solid Foundation for Web Development</h4>
+            <p style="font-size: 15px; color: var(--text-muted); line-height: 1.5;">This project establishes a strong technical foundation to develop more complex, full-scale web applications in the future.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 9 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 10: Recommendations -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">AREAS FOR ENHANCEMENT</div>
+        <h2 class="slide-title">8. Recommendations</h2>
+      </div>
+
+      <div class="list-rows">
+        <div class="list-row"><span class="list-row-bullet">➔</span><span class="list-row-title">Enhanced Visual UI</span><span class="list-row-desc">Incorporate dynamic background graphics or animated illustrations that change according to sunny, rainy, or snowy conditions.</span></div>
+        <div class="list-row"><span class="list-row-bullet">➔</span><span class="list-row-title">Descriptive Error Messages</span><span class="list-row-desc">Introduce clear modal or toast alerts when an invalid city name is queried or network connection is interrupted.</span></div>
+        <div class="list-row"><span class="list-row-bullet">➔</span><span class="list-row-title">Optimized Loading Experience</span><span class="list-row-desc">Implement animated skeleton cards and smooth spinners while awaiting OpenWeatherMap API responses.</span></div>
+        <div class="list-row"><span class="list-row-bullet">➔</span><span class="list-row-title">Comprehensive Responsiveness</span><span class="list-row-desc">Ensure seamless viewing and touch-friendly interactions across mobile devices, tablets, and large desktop screens.</span></div>
+        <div class="list-row"><span class="list-row-bullet">➔</span><span class="list-row-title">Extended Atmospheric Metrics</span><span class="list-row-desc">Display additional weather attributes like atmospheric pressure, UV index, air quality index, and visibility distance.</span></div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 10 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 11: Future Directions -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">ROADMAP & EXTENSIONS</div>
+        <h2 class="slide-title">9. Future Directions</h2>
+      </div>
+
+      <div class="grid-2x3">
+        <div class="card"><span class="card-title">1. 5-Day Forecast</span><span class="card-desc">Integrate extended weather forecast endpoints to render interactive 5-day temperature trends and charts.</span></div>
+        <div class="card"><span class="card-title">2. GPS Geolocation</span><span class="card-desc">Implement browser Geolocation API to detect and load user's real-time local weather automatically on landing.</span></div>
+        <div class="card"><span class="card-title">3. Animated Weather Icons</span><span class="card-desc">Add animated weather iconography (rain, thunder, sunshine) corresponding to live weather conditions.</span></div>
+        <div class="card"><span class="card-title">4. Sunrise & Sunset Tracker</span><span class="card-desc">Provide visual solar timelines detailing sunrise, sunset, and golden hour timings for searched cities.</span></div>
+        <div class="card"><span class="card-title">5. Multi-City Tracking</span><span class="card-desc">Allow users to bookmark favorite cities to compare current temperatures side-by-side on a unified dashboard.</span></div>
+        <div class="card"><span class="card-title">6. Weather Alerts</span><span class="card-desc">Push critical weather notifications and storm warning alerts based on meteorological API flags.</span></div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 11 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 12: Project Photos, Short Clips & Hyperlinks -->
+    <div class="slide">
+      <div class="slide-header">
+        <div class="slide-subtitle">DEMONSTRATION & REPOSITORIES</div>
+        <h2 class="slide-title">10. Project Photos, Short Clips & Hyperlinks</h2>
+      </div>
+
+      <div class="grid-3col" style="height: auto; margin-bottom: 20px;">
+        <div class="screenshot-box">
+          <span class="screenshot-tag">SCREENSHOT 1</span>
+          <div class="screenshot-title">Home Page Interface</div>
+          <div class="screenshot-note">[ Insert Home Page Screenshot Here ]</div>
+        </div>
+        <div class="screenshot-box">
+          <span class="screenshot-tag">SCREENSHOT 2</span>
+          <div class="screenshot-title">City Search Feature</div>
+          <div class="screenshot-note">[ Insert Search Interaction Screenshot ]</div>
+        </div>
+        <div class="screenshot-box">
+          <span class="screenshot-tag">SCREENSHOT 3</span>
+          <div class="screenshot-title">Weather Details View</div>
+          <div class="screenshot-note">[ Insert Weather Result Card Screenshot ]</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 18px 24px;">
+        <h4 style="font-size: 14px; text-transform: uppercase; color: var(--accent-cyan); letter-spacing: 1.5px; margin-bottom: 10px;">PROJECT LINKS & HYPERLINKS</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13.5px;">
+          <div><strong style="color: #fff;">• GitHub Repository:</strong> <span style="color: var(--accent-sky);">https://github.com/your-username/weather-detection-system</span></div>
+          <div><strong style="color: #fff;">• Live Web Application:</strong> <span style="color: var(--accent-sky);">https://weather-detection-system.vercel.app</span></div>
+          <div><strong style="color: #fff;">• Project Demo Video:</strong> <span style="color: var(--accent-sky);">https://youtu.be/your-demo-video-id</span></div>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: #fb923c; font-style: italic;">
+          * Note: Insert your actual project screenshots in the designated placeholders above. Do not use sample screenshots.
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Weather Detection System &bull; Sumant Kumar Sahoo (Roll: 69)</span>
+        <span>Slide 12 of 13</span>
+      </div>
+    </div>
+
+    <!-- Slide 13: Thank You -->
+    <div class="slide">
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+        <span class="title-banner" style="margin-bottom: 24px;">CONCLUSION</span>
+        <h1 style="font-size: 64px; font-weight: 800; letter-spacing: -1px; color: #fff; margin-bottom: 16px;">THANK YOU</h1>
+        <p style="font-size: 22px; color: var(--accent-sky); font-weight: 500; margin-bottom: 32px;">Thank you for your valuable time and attention.</p>
+        <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 14px 28px; border-radius: 9999px; font-size: 15px; color: var(--text-muted);">
+          Questions & Answers &bull; Feedback & Discussion
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>GIFT Autonomous College &bull; CSE (AI)</span>
+        <span>Slide 13 of 13</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('counter');
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= slides.length) index = slides.length - 1;
+      slides[currentSlide].classList.remove('active');
+      currentSlide = index;
+      slides[currentSlide].classList.add('active');
+      counter.textContent = `${currentSlide + 1} / ${slides.length}`;
+    }
+
+    function nextSlide() {
+      showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      showSlide(currentSlide - 1);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+  </script>
+</body>
+</html>

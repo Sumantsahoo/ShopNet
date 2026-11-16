@@ -1,37 +1,27 @@
 import React from "react";
 import { Link } from "react-router-dom";
-const Footer = () => {
-	return (
-		<footer style={{
-            background:'#09090b',
-            borderTop:'1px solid rgba(255,255,255,0.05)',
-            padding:'40px 20px',
-            marginTop:'auto'
-        }}>
-            <div style={{
-                maxWidth:'1200px',
-                margin:'0,auto',
-                display:'flex',
-                flexwrap:'wrap',
-                justifyContent:'space-between',
-                alignItems:'center',
-                gap:'20px'
-            }}>
-                <div>
-                    <h3 style={{color:'#f97316',marginBottom:'10pxx'}}>SHopNest</h3>
-                    <p style={{color:'a1a1aa',fontSize:'0.9rem'}}>Premimum E commerce Platform</p>
-                </div>
-                <div style={{display:'flex',gap:'20px'}}>
-                    <Link to='/about' style={{color:'#a1a1aa',fontSize:'0.9rem'}}>About Us</Link>
-                    <Link to='/return' style={{color:'#a1a1aa',fontSize:'0.9rem'}}>Return Policy</Link>
-                     <Link to='/Disclaimer' style={{color:'#a1a1aa',fontSize:'0.9rem'}}>Disclaimer</Link>
-                     <div style={{color:'#a1a1aa',fontSize:'0.9rem'}}>
-                        &copy; {new Date().getFullYear()} ShopNest.All rights reserved
-                     </div>
-                </div>
+import "../styles/footer.css";
+
+const Footer = () => (
+    <footer className="site-footer">
+        <div className="site-footer-inner">
+            <div>
+                <Link className="site-footer-brand" to="/">ShopNest</Link>
+                <p>Everyday finds, all in one place.</p>
             </div>
-       </footer>
-	);
-};
+            <nav aria-label="Help and policies">
+                <Link to="/faq">FAQs</Link>
+                <Link to="/policies">Terms, policies & licenses</Link>
+            </nav>
+            <div className="site-footer-social">
+                <span>Follow us</span>
+                <Link to="/social/instagram">Instagram</Link>
+                <Link to="/social/youtube">YouTube</Link>
+                <Link to="/social/linkedin">LinkedIn</Link>
+            </div>
+            <small>© {new Date().getFullYear()} ShopNest. All rights reserved.</small>
+        </div>
+    </footer>
+);
 
 export default Footer;

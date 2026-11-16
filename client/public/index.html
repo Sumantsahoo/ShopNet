@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="preload" as="image" href="%PUBLIC_URL%/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
@@ -16,6 +17,10 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <main style="min-height:100vh;display:grid;place-items:center;background:#09090b">
+        <img src="%PUBLIC_URL%/logo.png" alt="ShopNest" fetchpriority="high" style="display:block;width:min(60vw,280px);height:auto" />
+      </main>
+    </div>
   </body>
 </html>

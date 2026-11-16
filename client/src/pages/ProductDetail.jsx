@@ -1,96 +1,282 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
-import { useLanguage } from '../context/LanguageContext';
+import { AuthContext } from '../context/AuthContext';
 import WishlistButton from '../components/WishlistButton';
+import ProductCard from '../components/ProductCard';
+import { useLanguage } from '../context/LanguageContext';
 import { apiFetch } from '../utils/api';
+import { getCategorySlug } from '../utils/categories';
+import { readProductCache, saveProductCache } from '../utils/productCache';
 import '../styles/product.css';
 
 const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='100%25' height='100%25' fill='%2327272a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23a1a1aa' font-family='sans-serif' font-size='20'%3ENo Image Available%3C/text%3E%3C/svg%3E";
 
 const ProductDetail = () => {
     const { id } = useParams();
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const location = useLocation();
+    const { user } = useContext(AuthContext);
+    const [product, setProduct] = useState(() => readProductCache()?.find((item) => String(item._id) === String(id)) || null);
+    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [loading, setLoading] = useState(() => !readProductCache()?.some((item) => String(item._id) === String(id)));
+    const [error, setError] = useState('');
     const [cartMessage, setCartMessage] = useState('');
+    const [shareMessage, setShareMessage] = useState('');
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState('');
+    const [reviewMessage, setReviewMessage] = useState('');
+    const [reviewError, setReviewError] = useState(false);
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [canReview, setCanReview] = useState(false);
+    const [reviewEligibilityError, setReviewEligibilityError] = useState('');
     const dispatch = useDispatch();
     const { t } = useLanguage();
 
     useEffect(() => {
+        let cancelled = false;
+        const cachedProduct = readProductCache()?.find((item) => String(item._id) === String(id)) || null;
+        setProduct(cachedProduct);
+        setLoading(!cachedProduct);
+        setError('');
         const fetchProduct = async () => {
             try {
-                const res = await apiFetch(`/api/products/${id}`);
-                const data = await res.json();
+                const [productResponse, productsResponse] = await Promise.all([
+                    apiFetch(`/api/products/${id}`),
+                    apiFetch('/api/products')
+                ]);
+                const data = await productResponse.json();
+                if (!productResponse.ok) throw new Error(data.message || 'Could not load this product.');
+                const allProducts = await productsResponse.json();
+                if (!productsResponse.ok || !Array.isArray(allProducts)) throw new Error('Could not load similar products.');
+                if (cancelled) return;
                 setProduct(data);
-            } catch (error) {
-                console.error(error);
+                saveProductCache(allProducts.map((item) => String(item._id) === String(data._id) ? data : item));
+                setRelatedProducts(allProducts.filter((item) => item._id !== data._id && getCategorySlug(item.category) === getCategorySlug(data.category)).slice(0, 4));
+                if (user?.token) {
+                    try {
+                        const ordersResponse = await apiFetch('/api/orders/myorders', {
+                            headers: { Authorization: `Bearer ${user.token}` }
+                        });
+                        const orders = await ordersResponse.json();
+                        if (!ordersResponse.ok) throw new Error(orders.message || 'Could not check delivery eligibility.');
+                        if (!cancelled) {
+                            setCanReview(orders.some((order) => order.status === 'delivered' && order.orderItems.some((item) => String(item.product?._id || item.product) === String(data._id))));
+                            setReviewEligibilityError('');
+                        }
+                    } catch (eligibilityError) {
+                        if (!cancelled) setReviewEligibilityError(eligibilityError.message || 'Could not check whether this order was delivered.');
+                    }
+                } else {
+                    setCanReview(false);
+                }
+            } catch (fetchError) {
+                if (!cancelled) setError(fetchError.message || 'Could not load this product.');
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
-
         fetchProduct();
-    }, [id]);
+        return () => { cancelled = true; };
+    }, [id, user?.token]);
+
+    useEffect(() => {
+        if (!loading && location.hash === '#product-reviews') {
+            document.getElementById('product-reviews')?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [loading, location.hash]);
+
+    const averageRating = useMemo(() => Number(product?.rating || 0).toFixed(1), [product]);
 
     const handleAddToCart = () => {
-        if (product) {
-            dispatch(addToCart({
-                _id: product._id,
-                name: product.name,
-                price: product.price,
-                imageUrl: product.imageUrl,
-                qty: 1
-            }));
-            setCartMessage(t('addedToCart'));
+        if (!product) return;
+        dispatch(addToCart({
+            _id: product._id,
+            name: product.name,
+            price: product.price,
+            imageUrl: product.imageUrl,
+            originalPrice: product.originalPrice,
+            brand: product.brand,
+            stock: product.stock,
+            qty: 1
+        }));
+        setCartMessage(t('addedToCart'));
+    };
+
+    const handleShare = async () => {
+        setShareMessage('');
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: product.name, text: product.description, url: window.location.href });
+            } else if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(window.location.href);
+                setShareMessage('Product link copied.');
+            } else {
+                throw new Error('Sharing is not supported on this browser.');
+            }
+        } catch (shareError) {
+            if (shareError.name !== 'AbortError') setShareMessage(shareError.message || 'Could not share this product.');
         }
     };
 
-    if (loading) return <div style={{ textAlign: 'center', margin: '10px', color: '#f97316' }}>Loading Product...</div>;
-    if (!product) return <div style={{ textAlign: 'center', margin: '100px', color: '#ef4444' }}>Product Not Found</div>;
+    const submitReview = async (event) => {
+        event.preventDefault();
+        if (!user?.token) {
+            setReviewError(true);
+            setReviewMessage('Please sign in to leave a review.');
+            return;
+        }
+        setReviewSubmitting(true);
+        setReviewError(false);
+        setReviewMessage('');
+        try {
+            const response = await apiFetch(`/api/products/${id}/reviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${user.token}`
+                },
+                body: JSON.stringify({ rating, comment })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Could not save your review.');
+            setProduct(data.product);
+            setComment('');
+            setReviewMessage(data.message);
+        } catch (submitError) {
+            setReviewError(true);
+            setReviewMessage(submitError.message || 'Could not save your review.');
+        } finally {
+            setReviewSubmitting(false);
+        }
+    };
+
+    if (loading && !product) {
+        return (
+            <main className="product-detail-page product-detail-image-fallback">
+                <img src="/logo.png" alt="ShopNest" />
+            </main>
+        );
+    }
+    if (!product) return <main className="product-detail-page"><p className="product-page-error" role="alert">{error || 'Product not found.'}</p><Link to="/shop">Browse products</Link></main>;
+
+    const hasDiscount = Number(product.originalPrice) > Number(product.price);
 
     return (
-        <div className="product-detail-wrapper" style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-            <div style={{ color: '#a1a1aa', marginBottom: '20px', fontSize: '0.95rem' }}>
-                <Link to='/' style={{ color: '#f97316' }}>Home</Link> / <Link to='/shop' style={{ color: '#f97316' }}>Shop</Link> / {product.category} / <span style={{ color: '#fff' }}>{product.name}</span>
-            </div>
+        <main className="product-detail-page">
+            {error && <p className="product-page-error" role="status">Could not refresh this product. Showing saved product information.</p>}
+            <nav className="product-breadcrumbs" aria-label="Breadcrumb">
+                <Link to="/">Home</Link><span>/</span><Link to={`/category/${getCategorySlug(product.category)}`}>{product.category}</Link><span>/</span><span>{product.name}</span>
+            </nav>
 
-            <div className='product-detail'>
-                <div className='detail-image-container'>
-                    <img 
-                        src={product.imageUrl || FALLBACK_IMAGE} 
-                        alt={product.name} 
-                        className='detail-image'
-                        onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = FALLBACK_IMAGE;
-                        }} 
+            <section className="product-detail">
+                <div className="detail-image-container">
+                    <img
+                        src={product.imageUrl || FALLBACK_IMAGE}
+                        alt={product.name}
+                        className="detail-image"
+                        onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src = FALLBACK_IMAGE;
+                        }}
                     />
                 </div>
-
-                <div className='detail-info'>
-                    <h2 style={{ fontSize: '2.8rem', marginBottom: '10px' }}>{product.name}</h2>
-                    <p className='detail-price' style={{ fontSize: '2.5rem', margin: '15px 0' }}>₹{product.price.toFixed(2)}</p>
-
-                    <div style={{ marginBottom: '25px' }}>
-                        <h4 style={{ color: '#fff', marginBottom: '10px' }}>{t('productDescription')}</h4>
-                        <p style={{ color: '#a1a1aa', lineHeight: '1.8' }}>{product.description}</p>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <button onClick={handleAddToCart} className='btn' style={{ flexGrow: '1', padding: '18px', fontSize: '1.5rem' }}>
-                            {t('addToCart')}
-                        </button>
+                <div className="detail-info">
+                    <div className="product-detail-actions">
                         <WishlistButton product={product} />
+                        <button className="product-share-button" type="button" onClick={handleShare}>↗ <span>Share</span></button>
                     </div>
-                    {cartMessage && <p className="cart-feedback" role="status">{cartMessage}</p>}
+                    <p className="product-detail-category">{product.category}</p>
+                    <h1>{product.name}</h1>
+                    <a className="product-rating-link" href="#product-reviews">
+                        <span>★ {averageRating}</span> · {Number(product.numReviews || 0)} ratings and reviews
+                    </a>
+                    <div className="detail-price-row">
+                        <strong className="detail-price">₹{Number(product.price).toFixed(2)}</strong>
+                        {hasDiscount && <del>₹{Number(product.originalPrice).toFixed(2)}</del>}
+                        {hasDiscount && <span className="detail-discount">{Math.round((1 - Number(product.price) / Number(product.originalPrice)) * 100)}% off</span>}
+                    </div>
+                    <p className="product-offer-note">{hasDiscount ? 'Special price available while stocks last.' : 'Secure payment options available at checkout.'}</p>
 
-                    <p style={{ marginTop: '20px', color: product.stock > 0 ? '#10b981' : '#ef4444', fontWeight: '600' }}>
+                    <section className="product-delivery-card">
+                        <strong>Delivery</strong>
+                        <p>Check delivery options and add or update your address at checkout.</p>
+                        <Link to="/profile#address">Manage saved address</Link>
+                    </section>
+
+                    <section className="product-description">
+                        <h2>About this product</h2>
+                        <p>{product.description}</p>
+                    </section>
+
+                    <p className={`product-stock ${product.stock > 0 ? 'is-available' : 'is-unavailable'}`}>
                         {product.stock > 0 ? `${t('inStock')} (${product.stock} ${t('unitsAvailable')})` : t('outOfStock')}
                     </p>
+                    {shareMessage && <p className="product-share-feedback" role="status">{shareMessage}</p>}
                 </div>
-            </div>
-        </div>
+            </section>
+
+            {relatedProducts.length > 0 && (
+                <section className="related-products">
+                    <h2>Similar products</h2>
+                    <div className="product-grid">
+                        {relatedProducts.map((item) => <ProductCard key={item._id} product={item} />)}
+                    </div>
+                </section>
+            )}
+
+            <section className="product-bottom-actions">
+                <div>
+                    <strong>{product.name}</strong>
+                    <span>₹{Number(product.price).toFixed(2)}</span>
+                </div>
+                <button onClick={handleAddToCart} className="btn" disabled={product.stock < 1}>{t('addToCart')}</button>
+                <Link className="product-cart-link" to="/cart">Go to cart</Link>
+                {cartMessage && <p className="cart-feedback" role="status">{cartMessage}</p>}
+            </section>
+
+            <section className="product-reviews" id="product-reviews">
+                <header>
+                    <div><span>CUSTOMER FEEDBACK</span><h2>Ratings & reviews</h2></div>
+                    <strong>★ {averageRating} <small>({Number(product.numReviews || 0)})</small></strong>
+                </header>
+                {user?.token && canReview && <form className="product-review-form" onSubmit={submitReview}>
+                    <label htmlFor="product-rating">Your rating</label>
+                    <div className="review-stars" role="radiogroup" aria-label="Choose a star rating">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                            <button
+                                aria-label={`${value} star${value === 1 ? '' : 's'}`}
+                                aria-checked={rating === value}
+                                className={rating >= value ? 'is-selected' : ''}
+                                key={value}
+                                onClick={() => setRating(value)}
+                                role="radio"
+                                type="button"
+                            >★</button>
+                        ))}
+                    </div>
+                    <label htmlFor="product-review-comment">Write your review</label>
+                    <textarea id="product-review-comment" value={comment} onChange={(event) => setComment(event.target.value)} minLength={3} maxLength={1000} placeholder="What did you think of this product?" required />
+                    {reviewMessage && <p className={reviewError ? 'product-review-message is-error' : 'product-review-message'} role={reviewError ? 'alert' : 'status'}>{reviewMessage}</p>}
+                    <button className="btn" type="submit" disabled={reviewSubmitting}>{reviewSubmitting ? 'Saving review...' : 'Submit review'}</button>
+                </form>}
+                {!user?.token && <p className="no-product-reviews"><Link to="/login">Sign in</Link> and come back after delivery to write a review.</p>}
+                {user?.token && !canReview && (
+                    <p className="no-product-reviews" role={reviewEligibilityError ? 'alert' : 'status'}>
+                        {reviewEligibilityError || 'You can rate and review this product after your order is delivered.'}
+                    </p>
+                )}
+                <div className="product-review-list">
+                    {product.reviews?.length ? product.reviews.slice().reverse().map((review, index) => (
+                        <article key={`${review.user}-${index}`}>
+                            <div><strong>{review.name}</strong><span>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span></div>
+                            <p>{review.comment}</p>
+                            <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString()}</time>
+                        </article>
+                    )) : <p className="no-product-reviews">No reviews yet. Be the first to share your experience.</p>}
+                </div>
+            </section>
+        </main>
     );
 };
 

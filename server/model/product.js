@@ -3,6 +3,7 @@ const productSchema=new mongoose.Schema({
     name:{type:String,
         required:true
     },
+    brand:{type:String,trim:true,default:''},
     description:{
         type:String,
         required:true
@@ -10,6 +11,10 @@ const productSchema=new mongoose.Schema({
     price:{
         type:Number,
         required:true
+    },
+    originalPrice:{
+        type:Number,
+        min:0
     },
     category:{
         type:String,
@@ -35,6 +40,13 @@ const productSchema=new mongoose.Schema({
     numReviews:{
         type:Number,
         default:0
-    }
+    },
+    reviews:[{
+        user:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
+        name:{type:String,required:true},
+        rating:{type:Number,required:true,min:1,max:5},
+        comment:{type:String,required:true,maxlength:1000},
+        createdAt:{type:Date,default:Date.now}
+    }]
 });
 module.exports=mongoose.model('Product',productSchema);

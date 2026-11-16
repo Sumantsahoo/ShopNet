@@ -3,6 +3,7 @@ const Product = require('../model/product');
 const User = require('../model/user');
 const { createHash, randomBytes, randomInt, timingSafeEqual } = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const markOrderPaid = require('../utils/markOrderPaid');
 
 const hashSecret = (value) => createHash('sha256').update(value).digest();
 const EXCHANGE_WINDOW_MS = 10 * 24 * 60 * 60 * 1000;
@@ -178,7 +179,7 @@ const createOrder = async (req, res) => {
 
 const myOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user._id }).populate('orderItems.product', 'name price imageUrl');
+        const orders = await Order.find({ user: req.user._id }).populate('orderItems.product', 'name brand price imageUrl rating numReviews');
         return res.json(orders);
     } catch (error) {
         return res.status(500).json({ message: 'Server error' });
@@ -224,7 +225,7 @@ const getOrderById = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id)
             .populate('user', 'id name email')
-            .populate('orderItems.product', 'name price imageUrl');
+            .populate('orderItems.product', 'name brand price imageUrl rating numReviews');
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -247,7 +248,7 @@ const getOrders = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate('user', 'id name email')
             .populate('paymentConfirmedBy', 'name email')
-            .populate('orderItems.product', 'name price imageUrl');
+            .populate('orderItems.product', 'name brand price imageUrl rating numReviews');
         return res.json(orders);
     } catch (error) {
         return res.status(500).json({ message: 'server Error' });
@@ -257,7 +258,7 @@ const getOrders = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        const validStatuses = ['pending', 'processing', 'shipped', 'delivered'];
+        const validStatuses = ['pending', 'processing', 'shipped', 'in_transit', 'out_for_delivery', 'delivered'];
 
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ message: 'Invalid order status' });
@@ -273,7 +274,7 @@ const updateOrderStatus = async (req, res) => {
             return res.status(400).json({ message: 'Only paid orders can be processed, shipped, or delivered.' });
         }
 
-        const statusProgress = ['pending', 'processing', 'shipped', 'delivered'];
+        const statusProgress = ['pending', 'processing', 'shipped', 'in_transit', 'out_for_delivery', 'delivered'];
         if (statusProgress.indexOf(status) < statusProgress.indexOf(order.status)) {
             return res.status(400).json({ message: 'Order fulfillment status cannot move backward.' });
         }
@@ -284,6 +285,8 @@ const updateOrderStatus = async (req, res) => {
         order.isDelivered = status === 'delivered';
         if (status === 'processing' && !order.processingAt) order.processingAt = statusChangedAt;
         if (status === 'shipped' && !order.shippedAt) order.shippedAt = statusChangedAt;
+        if (status === 'in_transit' && !order.inTransitAt) order.inTransitAt = statusChangedAt;
+        if (status === 'out_for_delivery' && !order.outForDeliveryAt) order.outForDeliveryAt = statusChangedAt;
         order.deliveredAt = status === 'delivered'
             ? (wasDelivered ? order.deliveredAt : statusChangedAt)
             : order.deliveredAt;
@@ -291,7 +294,7 @@ const updateOrderStatus = async (req, res) => {
         const updatedOrder = await Order.findById(order._id)
             .populate('user', 'id name email')
             .populate('paymentConfirmedBy', 'name email')
-            .populate('orderItems.product', 'name price imageUrl');
+            .populate('orderItems.product', 'name brand price originalPrice imageUrl rating numReviews');
         return res.json({ message: 'Order status updated successfully', order: updatedOrder });
     } catch (error) {
         return res.status(500).json({ message: 'Server error' });
@@ -318,7 +321,7 @@ const reviewExchangeRequest = async (req, res) => {
         await order.save();
         const updatedOrder = await Order.findById(order._id)
             .populate('user', 'id name email')
-            .populate('orderItems.product', 'name price imageUrl');
+            .populate('orderItems.product', 'name brand price originalPrice imageUrl rating numReviews');
         return res.json({ message: `Exchange request ${status}.`, order: updatedOrder });
     } catch (error) {
         console.error('Exchange request review failed:', error.message);
@@ -341,24 +344,28 @@ const confirmManualPayment = async (req, res) => {
             return res.status(409).json({ message: 'This order is already marked as paid.' });
         }
 
-        order.isPaid = true;
-        order.paidAt = new Date();
-        order.paymentConfirmation = 'admin';
-        order.manualPaymentReference = reference;
-        order.paymentConfirmedBy = req.user._id;
-        if (order.status === 'pending') {
-            order.status = 'processing';
-            order.processingAt = new Date();
+        const { order: paidOrder, alreadyPaid } = await markOrderPaid(order, {
+            paymentConfirmation: 'admin',
+            manualPaymentReference: reference,
+            paymentConfirmedBy: req.user._id
+        });
+        if (alreadyPaid) {
+            return res.status(409).json({ message: 'This order was already marked as paid.' });
         }
-        await order.save();
+        if (!paidOrder) {
+            return res.status(409).json({ message: 'Could not confirm payment for this order.' });
+        }
 
-        const updatedOrder = await Order.findById(order._id)
+        const updatedOrder = await Order.findById(paidOrder._id)
             .populate('user', 'id name email')
             .populate('paymentConfirmedBy', 'name email')
-            .populate('orderItems.product', 'name price imageUrl');
+            .populate('orderItems.product', 'name brand price originalPrice imageUrl rating numReviews');
         return res.json({ message: 'Payment manually confirmed. Check fulfillment details before shipping.', order: updatedOrder });
     } catch (error) {
         console.error('Admin payment confirmation failed:', error.message);
+        if (error.message.includes('stock') || error.message.includes('inventory')) {
+            return res.status(409).json({ message: error.message });
+        }
         return res.status(500).json({ message: 'Could not confirm payment. Please try again.' });
     }
 };

@@ -10,6 +10,25 @@ body{
     min-height:100vh;
     overflow-x: hidden;
 }
+
+.route-image-fallback {
+    display: grid;
+    min-height: 55vh;
+    place-items: center;
+}
+
+.route-image-fallback img {
+    display: block;
+    width: min(60vw, 280px);
+    height: auto;
+}
+
+.product-load-message {
+    margin: 12px 0;
+    color: #fdba74;
+    font-size: 0.9rem;
+}
+
 .main-content{
     min-height: 85vh;
     padding: 40px 20px;
@@ -72,4 +91,117 @@ h2{
 }
 ::-webkit-scrollbar-thumb:hover{
     background: #3f3f46;
+}
+
+html[data-theme="light"] body {
+    color: #18181b;
+    background: #f4f4f5;
+}
+
+html[data-theme="light"] .navbar {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: #e4e4e7;
+}
+
+html[data-theme="light"] .navbar-brand a,
+html[data-theme="light"] .navbar-links a {
+    color: #18181b;
+}
+
+html[data-theme="light"] .mobile-bottom-nav {
+    border-color: #d4d4d8;
+    background: #fff;
+}
+
+html[data-theme="light"] .navbar-search-control {
+    border-color: #d4d4d8;
+    background: #fff;
+}
+
+html[data-theme="light"] .navbar-search-control input {
+    color: #18181b;
+}
+
+html[data-theme="light"] .navbar-search-location strong {
+    color: #27272a;
+}
+
+html[data-theme="light"] .mobile-bottom-nav a {
+    color: #52525b;
+}
+
+html[data-theme="light"] .category-sidebar,
+html[data-theme="light"] .product-card,
+html[data-theme="light"] .product-detail,
+html[data-theme="light"] .product-reviews,
+html[data-theme="light"] .related-products,
+html[data-theme="light"] .profile-card,
+html[data-theme="light"] .profile-address-card,
+html[data-theme="light"] .profile-settings-card,
+html[data-theme="light"] .profile-services-card,
+html[data-theme="light"] .profile-wishlist,
+html[data-theme="light"] .profile-action-card,
+html[data-theme="light"] .faq-list details,
+html[data-theme="light"] .policy-list article,
+html[data-theme="light"] .cart-container,
+html[data-theme="light"] .orders-page .order-card {
+    color: #18181b;
+    border-color: #e4e4e7;
+    background: #fff;
+}
+
+html[data-theme="light"] .storefront-heading h1,
+html[data-theme="light"] .profile-identity h2,
+html[data-theme="light"] .profile-section-heading h2,
+html[data-theme="light"] .help-heading h1,
+html[data-theme="light"] .product-detail .detail-info h1,
+html[data-theme="light"] .product-description h2,
+html[data-theme="light"] .product-reviews > header h2,
+html[data-theme="light"] .faq-list summary,
+html[data-theme="light"] .policy-list h2 {
+    color: #18181b;
+}
+
+html[data-theme="light"] .product-image,
+html[data-theme="light"] .detail-image-container,
+html[data-theme="light"] .product-delivery-card,
+html[data-theme="light"] .product-review-form textarea,
+html[data-theme="light"] .profile-address-summary,
+html[data-theme="light"] .profile-address-fields input,
+html[data-theme="light"] .profile-address-fields select,
+html[data-theme="light"] .profile-edit-form input,
+html[data-theme="light"] .profile-service-item,
+html[data-theme="light"] .profile-theme-toggle {
+    color: #18181b;
+    border-color: #d4d4d8;
+    background: #f4f4f5;
+}
+
+html[data-theme="light"] .product-info .product-name,
+html[data-theme="light"] .product-info .product-name a,
+html[data-theme="light"] .profile-address-summary strong {
+    color: #18181b;
+}
+
+html[data-theme="light"] .category-sidebar a,
+html[data-theme="light"] .category-chips a {
+    color: #3f3f46;
+}
+
+html[data-theme="light"] .category-chips a.is-active,
+html[data-theme="light"] .category-sidebar a.is-active {
+    color: #fff;
+}
+
+html[data-theme="light"] .product-detail-actions .wishlist-button,
+html[data-theme="light"] .product-share-button,
+html[data-theme="light"] .profile-service-item,
+html[data-theme="light"] .profile-theme-toggle {
+    color: #27272a;
+}
+
+html[data-theme="light"] .product-delivery-card p,
+html[data-theme="light"] .product-description p,
+html[data-theme="light"] .product-review-list article p {
+    color: #52525b;
 }

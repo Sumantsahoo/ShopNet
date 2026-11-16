@@ -41,6 +41,10 @@ You don't have to ever use `eject`. The curated feature set is suitable for smal
 
 ## Learn More
 
+### ShopNest social links
+
+The profile and footer use the React routes `/social/instagram`, `/social/youtube`, and `/social/linkedin`. Configure each destination in the client build environment using `REACT_APP_INSTAGRAM_URL`, `REACT_APP_YOUTUBE_URL`, and `REACT_APP_LINKEDIN_URL`. Until configured, the route explains that the official profile URL is unavailable.
+
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).

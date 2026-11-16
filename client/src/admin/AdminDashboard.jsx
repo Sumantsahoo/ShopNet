@@ -47,7 +47,10 @@ const AdminDashboard = () => {
         <main className="admin-page">
             <header className="admin-heading">
                 <div><p className="admin-eyebrow">SHOPNEST / ADMIN</p><h1>Dashboard</h1></div>
-                <Link className="admin-action" to="/admin/products/new">Add product</Link>
+                <div className="admin-heading-actions">
+                    <Link className="admin-profile-link" to="/admin/profile">Admin profile</Link>
+                    <Link className="admin-action" to="/admin/products/new">Add product</Link>
+                </div>
             </header>
             {loading && <p className="admin-status">Loading dashboard...</p>}
             {error && <p className="admin-alert" role="alert">{error}</p>}
@@ -69,6 +72,7 @@ const AdminDashboard = () => {
                 <Link to="/admin/products/edit">Edit products <span>Manage the catalog</span></Link>
                 <Link to="/admin/users">Customers <span>View registered users</span></Link>
                 <Link to="/admin/orders">Orders <span>Review and update orders</span></Link>
+                <Link to="/admin/profile">Admin profile <span>Account settings and store alerts</span></Link>
             </nav>
         </main>
     );

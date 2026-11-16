@@ -12,18 +12,28 @@ const ProductCard= ({product})=>{
     return (
         <div className="product-card">
                <WishlistButton product={product} compact />
-             <img 
-                src={product.imageUrl || FALLBACK_IMAGE} 
-                alt={product.name} 
-                className='product-image'
-                onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = FALLBACK_IMAGE;
-                }}
-             />
+             <Link to={`/products/${product._id}`} className="product-card-image-link" aria-label={`View ${product.name}`}>
+                <img
+                    src={product.imageUrl || FALLBACK_IMAGE}
+                    alt={product.name}
+                    className='product-image'
+                    onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = FALLBACK_IMAGE;
+                    }}
+                />
+             </Link>
              <div className="product-info">
-                <h3 className='product-name'>{product.name}</h3>
-                <p className='product-price'>₹{price.toFixed(2)}</p>
+                {product.brand && <p className="product-brand">{product.brand}</p>}
+                <h3 className='product-name'><Link to={`/products/${product._id}`}>{product.name}</Link></h3>
+                <div className="product-card-rating" aria-label={`${Number(product.rating || 0).toFixed(1)} out of 5 stars`}>
+                    <span>★ {Number(product.rating || 0).toFixed(1)}</span>
+                    <small>({Number(product.numReviews || 0)})</small>
+                </div>
+                <p className='product-price'>
+                    ₹{price.toFixed(2)}
+                    {Number(product.originalPrice) > price && <del>₹{Number(product.originalPrice).toFixed(2)}</del>}
+                </p>
                 <Link to={`/products/${product._id}`} className='view-details-button'>{t('viewDetails')}</Link>
              </div>
         </div>

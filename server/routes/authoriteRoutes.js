@@ -8,7 +8,8 @@ const {
     resetPasswordWithOtp,
     getUsers,
     getProfile,
-    updateDefaultAddress
+    updateDefaultAddress,
+    updateProfile
 }=require("../controllers/authController");
 const {protect}=require('../middleware/authMiddleWare');
 const {admin}=require('../middleware/adminMiddleWare');
@@ -47,6 +48,7 @@ router.post('/forgot-password/request-otp',requestPasswordResetOtp);
 router.post('/forgot-password/reset',resetPasswordWithOtp);
 router.get('/profile',protect,getProfile);
 router.put('/profile',protect,updateDefaultAddress);
+router.put('/profile/settings',protect,updateProfile);
 router.get('/wishlist',protect,getWishlist);
 router.post('/wishlist/:productId',protect,addWishlistProduct);
 router.delete('/wishlist/:productId',protect,removeWishlistProduct);

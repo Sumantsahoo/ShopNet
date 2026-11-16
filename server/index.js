@@ -5,7 +5,6 @@ const dotenv=require("dotenv");
 dotenv.config({path:require('path').join(__dirname,'.env')});
 const connectDB=require("./config/db");
 const userRoutes=require('./routes/authoriteRoutes');
-connectDB();
 
 const app=express();
 app.use(express.json());
@@ -56,6 +55,11 @@ if(process.env.NODE_ENV==='production'){
 }
 
 const PORT=process.env.PORT||5000;
-app.listen(PORT,()=>{
-    console.log(`server is running at http://localhost:${PORT}`);
+connectDB().then(()=>{
+    app.listen(PORT,()=>{
+        console.log(`server is running at http://localhost:${PORT}`);
+    });
+}).catch((error)=>{
+    console.error('Server startup failed:',error.message);
+    process.exit(1);
 });

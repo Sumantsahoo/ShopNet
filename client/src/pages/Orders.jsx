@@ -102,7 +102,7 @@ const Orders = () => {
             <div className="orders-list">
                 {orders.map((order) => (
                     (() => {
-                        const statusIndex = { pending: 0, processing: 1, shipped: 2, delivered: 3 }[order.status] ?? 0;
+                        const statusIndex = { pending: 0, processing: 1, shipped: 2, in_transit: 3, out_for_delivery: 4, delivered: 5 }[order.status] ?? 0;
                         const exchangeDeadline = order.deliveredAt
                             ? new Date(new Date(order.deliveredAt).getTime() + 10 * 24 * 60 * 60 * 1000)
                             : null;
@@ -111,6 +111,8 @@ const Orders = () => {
                             { label: t('paid'), date: order.paidAt },
                             { label: t('packaging'), date: order.processingAt },
                             { label: t('shipped'), date: order.shippedAt },
+                            { label: 'On the way', date: order.inTransitAt },
+                            { label: 'Out for delivery', date: order.outForDeliveryAt },
                             { label: t('delivered'), date: order.deliveredAt }
                         ];
                         return (
@@ -126,7 +128,7 @@ const Orders = () => {
                                     {order.isPaid ? t('paid') : t('paymentPending')}
                                 </span>
                                 <span className="order-status">
-                                    {{ pending: t('paymentPending'), processing: t('packaging'), shipped: t('shipped'), delivered: t('delivered') }[order.status] || order.status}
+                                    {{ pending: t('paymentPending'), processing: t('packaging'), shipped: t('shipped'), in_transit: 'On the way', out_for_delivery: 'Out for delivery', delivered: t('delivered') }[order.status] || order.status}
                                 </span>
                             </div>
                         </div>
@@ -139,7 +141,7 @@ const Orders = () => {
                                     <h3>{t('orderJourney')}</h3>
                                 </div>
                                 <span className="tracking-current">
-                                    {{ pending: t('paymentPending'), processing: t('packaging'), shipped: t('shipped'), delivered: t('delivered') }[order.status] || t('paymentPending')}
+                                    {{ pending: t('paymentPending'), processing: t('packaging'), shipped: t('shipped'), in_transit: 'On the way', out_for_delivery: 'Out for delivery', delivered: t('delivered') }[order.status] || t('paymentPending')}
                                 </span>
                             </div>
                             <ol className="order-timeline">
@@ -181,7 +183,13 @@ const Orders = () => {
                                                 }}
                                             />
                                             <span>{item.name}</span>
+                                            {item.product?._id && Number(item.product.rating) > 0 && (
+                                                <span className="ordered-product-rating">★ {Number(item.product.rating).toFixed(1)} ({Number(item.product.numReviews || 0)})</span>
+                                            )}
                                             {item.product?._id && <WishlistButton product={item.product} compact />}
+                                            {order.status === 'delivered' && item.product?._id && (
+                                                <Link className="order-review-link" to={`/products/${item.product._id}#product-reviews`}>Rate & review</Link>
+                                            )}
                                             <strong>₹{(item.price * item.qty).toFixed(2)}</strong>
                                         </li>
                                     ))}

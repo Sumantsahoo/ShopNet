@@ -33,7 +33,12 @@ const Cart = () => {
         <div className='cart-container'>
             <h2>{t('shoppingCart')}</h2>
             {cartItems.length===0 ?(
-                <p>{t('cartEmpty')} <Link to='/shop'>{t('goShopping')}</Link></p>
+                <section className="cart-empty-state">
+                    <span aria-hidden="true">🛒</span>
+                    <h3>{t('cartEmpty')}</h3>
+                    <p>Your cart is waiting for something you love.</p>
+                    <Link className="btn" to="/">{t('goShopping')}</Link>
+                </section>
             ):
             (
                 <div className='cart-layout'>
@@ -59,7 +64,7 @@ const Cart = () => {
                                     <img src={item.imageUrl} alt={item.name} className='cart-item-image'/>
                                     <div className='cart-item-details'>
                                         <h4>{item.name}</h4>
-                                        <p>₹{item.price}</p>
+                                        <p>₹{item.price}{Number(item.originalPrice) > Number(item.price) && <del>₹{Number(item.originalPrice).toFixed(2)}</del>}</p>
                                         <div className='qty-controls'>
                                             <button aria-label={`Decrease ${item.name} quantity`} onClick={()=> handleUpdateQty(item,item.qty-1)}>-</button>
                                             <span>{item.qty}</span>

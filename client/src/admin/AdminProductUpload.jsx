@@ -2,14 +2,18 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
+import { PRODUCT_CATEGORIES } from '../utils/categories';
 import '../styles/auth.css';
 
 const AdminProductUpload = () => {
     const { user } = useContext(AuthContext);
     const [name, setName] = useState('');
+    const [brand, setBrand] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
+    const [originalPrice, setOriginalPrice] = useState('');
     const [category, setCategory] = useState('');
+    const [customCategory, setCustomCategory] = useState('');
     const [stock, setStock] = useState('');
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
@@ -43,11 +47,19 @@ const AdminProductUpload = () => {
             return;
         }
 
+        const selectedCategory = category === '__custom' ? customCategory.trim() : category;
+        if (!selectedCategory) {
+            setMessage('Please choose or enter a product category.');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('name', name);
+        if (brand.trim()) formData.append('brand', brand.trim());
         formData.append('description', description);
         formData.append('price', price);
-        formData.append('category', category);
+        if (originalPrice) formData.append('originalPrice', originalPrice);
+        formData.append('category', selectedCategory);
         formData.append('stock', stock);
         if (image) {
             formData.append('image', image);
@@ -73,9 +85,12 @@ const AdminProductUpload = () => {
 
             setMessage(`Product "${data.name}" uploaded successfully.`);
             setName('');
+            setBrand('');
             setDescription('');
             setPrice('');
+            setOriginalPrice('');
             setCategory('');
+            setCustomCategory('');
             setStock('');
             setImage(null);
             setImageUrl('');
@@ -111,6 +126,7 @@ const AdminProductUpload = () => {
                     onChange={(event) => setName(event.target.value)}
                     required
                 />
+                <input type="text" placeholder="Brand (optional)" value={brand} onChange={(event) => setBrand(event.target.value)} maxLength={80} />
                 <textarea
                     placeholder="Description"
                     value={description}
@@ -126,13 +142,13 @@ const AdminProductUpload = () => {
                     step="0.01"
                     required
                 />
-                <input
-                    type="text"
-                    placeholder="Category"
-                    value={category}
-                    onChange={(event) => setCategory(event.target.value)}
-                    required
-                />
+                <select value={category} onChange={(event) => setCategory(event.target.value)} required>
+                    <option value="">Choose a product category</option>
+                    {PRODUCT_CATEGORIES.map(({ slug, label }) => <option key={slug} value={label}>{label}</option>)}
+                    <option value="__custom">Other / custom category</option>
+                </select>
+                {category === '__custom' && <input type="text" placeholder="Enter custom category (e.g. Pants)" value={customCategory} onChange={(event) => setCustomCategory(event.target.value)} maxLength={60} required />}
+                <input type="number" placeholder="Original price (optional, for sale display)" value={originalPrice} onChange={(event) => setOriginalPrice(event.target.value)} min={price || 0} step="0.01" />
                 <input
                     type="number"
                     placeholder="Stock"

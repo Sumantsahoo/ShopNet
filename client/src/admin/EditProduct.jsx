@@ -65,9 +65,11 @@ const EditProduct = () => {
                 },
                 body: JSON.stringify({
                     name: product.name,
+                    brand: product.brand || '',
                     description: product.description,
                     category: product.category,
                     price: product.price,
+                    originalPrice: product.originalPrice || '',
                     stock: product.stock,
                     imageUrl: product.imageUrl
                 })
@@ -96,16 +98,20 @@ const EditProduct = () => {
             {!loading && !id && (
                 <div className="admin-table-wrap">
                     <table className="admin-table">
-                        <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead>
+                        <thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Price</th><th>Rating</th><th>Stock</th><th></th></tr></thead>
                         <tbody>
                             {products.map((item) => (
                                 <tr key={item._id}>
-                                    <td>{item.name}</td><td>{item.category}</td>
-                                    <td>₹{Number(item.price).toLocaleString('en-IN')}</td><td>{item.stock}</td>
+                                    <td>{item.name}</td><td>{item.brand || '—'}</td><td>{item.category}</td>
+                                    <td>
+                                        ₹{Number(item.price).toLocaleString('en-IN')}
+                                        {Number(item.originalPrice) > Number(item.price) && <del className="admin-original-price">₹{Number(item.originalPrice).toLocaleString('en-IN')}</del>}
+                                    </td>
+                                    <td>★ {Number(item.rating || 0).toFixed(1)} ({Number(item.numReviews || 0)})</td><td>{item.stock}</td>
                                     <td><Link className="admin-text-link" to={`/admin/products/${item._id}/edit`}>Edit</Link></td>
                                 </tr>
                             ))}
-                            {products.length === 0 && <tr><td colSpan="5">No products found.</td></tr>}
+                            {products.length === 0 && <tr><td colSpan="7">No products found.</td></tr>}
                         </tbody>
                     </table>
                 </div>
@@ -113,10 +119,12 @@ const EditProduct = () => {
             {!loading && product && (
                 <form className="admin-edit-form" onSubmit={saveProduct}>
                     <label>Product name<input name="name" value={product.name || ''} onChange={updateField} required /></label>
+                    <label>Brand (optional)<input name="brand" value={product.brand || ''} onChange={updateField} maxLength={80} /></label>
                     <label>Description<textarea name="description" value={product.description || ''} onChange={updateField} required rows="5" /></label>
                     <div className="admin-form-row">
                         <label>Category<input name="category" value={product.category || ''} onChange={updateField} required /></label>
                         <label>Price<input name="price" type="number" min="0" step="0.01" value={product.price ?? ''} onChange={updateField} required /></label>
+                        <label>Original price (optional)<input name="originalPrice" type="number" min="0" step="0.01" value={product.originalPrice ?? ''} onChange={updateField} /></label>
                         <label>Stock<input name="stock" type="number" min="0" step="1" value={product.stock ?? ''} onChange={updateField} required /></label>
                     </div>
                     <label>Image URL<input name="imageUrl" type="url" value={product.imageUrl || ''} onChange={updateField} /></label>

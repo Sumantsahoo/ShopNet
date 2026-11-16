@@ -1,0 +1,504 @@
+.home-container {
+    width: min(100% - 32px, 1440px);
+    margin: 0 auto;
+    padding: 28px 0 64px;
+}
+
+.category-directory {
+    width: min(100% - 32px, 1280px);
+    min-height: 70vh;
+    margin: 0 auto;
+    padding: 36px 0 64px;
+}
+
+.category-directory > header {
+    margin-bottom: 24px;
+}
+
+.category-directory > header > span {
+    color: #fb923c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.category-directory > header h1 {
+    margin: 6px 0;
+    color: #fafafa;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.category-directory > header p {
+    margin: 0;
+    color: #a1a1aa;
+}
+
+.category-icon-strip {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 6px 2px 18px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: #52525b transparent;
+}
+
+.category-icon-link {
+    display: grid;
+    flex: 0 0 116px;
+    justify-items: center;
+    align-content: start;
+    gap: 8px;
+    min-height: 132px;
+    padding: 14px 8px 10px;
+    border: 1px solid #303036;
+    border-radius: 12px;
+    color: #fafafa;
+    background: #111113;
+    text-align: center;
+    scroll-snap-align: start;
+    transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.category-icon-link:hover {
+    transform: translateY(-2px);
+    border-color: #f97316;
+}
+
+.category-icon-link strong {
+    max-width: 100%;
+    font-size: 0.88rem;
+    line-height: 1.25;
+}
+
+.category-icon-link small {
+    color: #a1a1aa;
+    font-size: 0.74rem;
+}
+
+.category-products-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #303036;
+}
+
+.category-products-section > header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.category-products-section > header > div > span {
+    color: #fb923c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.category-products-section h2 {
+    margin: 4px 0 0;
+    color: #fafafa;
+    font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+
+.category-products-section > header > a {
+    color: #fb923c;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.category-products-empty {
+    padding: 24px;
+    border: 1px solid #303036;
+    border-radius: 10px;
+    color: #a1a1aa;
+    background: #111113;
+    text-align: center;
+}
+
+.category-image-placeholder {
+    display: grid;
+    min-height: 240px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid #303036;
+    border-radius: 12px;
+    background: #eefdff;
+}
+
+.category-image-placeholder img {
+    display: block;
+    width: min(48vw, 220px);
+    height: auto;
+}
+
+.category-icon-link .category-directory-icon {
+    width: 68px;
+    font-size: 1.8rem;
+    background: linear-gradient(145deg, #7c2d12, #ea580c);
+}
+
+.category-directory-icon {
+    display: grid;
+    width: 42px;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: #9a3412;
+    font-weight: 800;
+}
+
+.hero-banner {
+    position: relative;
+    overflow: hidden;
+    min-height: 220px;
+    margin-bottom: 28px;
+    padding: 32px;
+    border: 1px solid rgba(249, 115, 22, 0.22);
+    border-radius: 20px;
+    background: radial-gradient(ellipse at 80% 10%, rgba(234, 88, 12, 0.34), transparent 42%), linear-gradient(110deg, #18181b, #09090b);
+    color: #fff;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40%;
+    align-items: center;
+}
+
+.hero-product-image {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 43%;
+    height: 100%;
+    object-fit: cover;
+    mask-image: linear-gradient(to right, transparent, #000 36%);
+}
+
+.hero-product-image.is-shopnest-logo {
+    object-fit: contain;
+    background: #eefdff;
+    mask-image: none;
+}
+
+.hero-copy {
+    position: relative;
+    z-index: 1;
+    grid-column: 1;
+    max-width: 700px;
+}
+
+.hero-eyebrow,
+.discovery-section header span {
+    color: #fb923c;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.hero-banner h1 {
+    margin: 0 0 10px;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.hero-banner p {
+    margin: 0;
+    color: #d4d4d8;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.hero-actions a {
+    padding: 10px 14px;
+    border: 1px solid #9a3412;
+    border-radius: 7px;
+    color: #fff;
+    background: #c2410c;
+    font-weight: 700;
+}
+
+.hero-actions a + a {
+    border-color: #52525b;
+    background: rgba(24, 24, 27, 0.75);
+}
+
+.recent-search-section,
+.discovery-section {
+    margin: 24px 0;
+    padding: clamp(16px, 3vw, 24px);
+    border: 1px solid #303036;
+    border-radius: 14px;
+    background: #111113;
+}
+
+.recent-search-section h2 {
+    margin: 0 0 14px;
+    color: #fafafa;
+    background: none;
+    font-size: 1.15rem;
+    -webkit-text-fill-color: currentColor;
+}
+
+.recent-search-section > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.recent-search-section a {
+    padding: 8px 12px;
+    border: 1px solid #3f3f46;
+    border-radius: 999px;
+    color: #d4d4d8;
+    background: #18181b;
+    font-size: 0.85rem;
+}
+
+.recent-search-section a span {
+    color: #fb923c;
+}
+
+.discovery-section header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.discovery-section header h2 {
+    margin: 5px 0 0;
+    color: #fafafa;
+    background: none;
+    font-size: clamp(1.15rem, 3vw, 1.55rem);
+    -webkit-text-fill-color: currentColor;
+}
+
+.discovery-section header > a {
+    color: #fb923c;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.brand-spotlight-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.brand-spotlight-list a {
+    display: grid;
+    gap: 6px;
+    min-height: 76px;
+    align-content: center;
+    padding: 12px;
+    border: 1px solid #3f3f46;
+    border-radius: 9px;
+    color: #fafafa;
+    background: #18181b;
+    font-weight: 700;
+}
+
+.brand-spotlight-list a span {
+    color: #fb923c;
+    font-size: 0.78rem;
+}
+
+
+
+.storefront-layout {
+    display: block;
+}
+
+.storefront-results {
+    min-width: 0;
+}
+
+.category-chips {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding: 4px 0 16px;
+    scrollbar-width: thin;
+}
+
+.category-chips a {
+    flex: 0 0 auto;
+    padding: 8px 13px;
+    border: 1px solid #3f3f46;
+    border-radius: 999px;
+    color: #d4d4d8;
+    font-size: 0.84rem;
+}
+
+.category-chips a:hover,
+.category-chips a.is-active {
+    border-color: #f97316;
+    color: #fff;
+    background: #9a3412;
+}
+
+.storefront-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 8px 0 20px;
+}
+
+.storefront-heading span {
+    color: #fb923c;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.storefront-heading h1 {
+    margin: 6px 0 0;
+    color: #fafafa;
+    font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.storefront-heading > p {
+    margin: 0 0 4px;
+    color: #a1a1aa;
+    font-size: 0.88rem;
+}
+
+.storefront-empty {
+    padding: 44px 20px;
+    border: 1px dashed #52525b;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.storefront-empty h2 {
+    margin: 0 0 8px;
+    font-size: 1.25rem;
+    background: none;
+    color: #fff;
+    -webkit-text-fill-color: currentColor;
+}
+
+.storefront-empty p {
+    margin: 0 0 16px;
+    color: #a1a1aa;
+}
+
+.storefront-empty a {
+    color: #fb923c;
+    font-weight: 700;
+}
+
+@media (max-width: 520px) {
+    .home-container {
+        width: min(100% - 20px, 1440px);
+        padding: 18px 0 90px;
+    }
+
+    .hero-banner {
+        min-height: 178px;
+        margin-bottom: 18px;
+        padding: 22px;
+        grid-template-columns: 1fr;
+    }
+
+    .hero-product-image {
+        width: 72%;
+        opacity: 0.45;
+        mask-image: linear-gradient(to right, transparent, #000 72%);
+    }
+
+    .hero-product-image.is-shopnest-logo {
+        mask-image: none;
+    }
+    .hero-copy {
+        grid-column: 1;
+    }
+
+    .hero-banner h1 {
+        font-size: 1.8rem;
+    }
+
+    .recent-search-section,
+    .discovery-section {
+        margin: 16px 0;
+        padding: 14px;
+    }
+
+    .discovery-section header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .storefront-heading {
+        align-items: start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .category-directory {
+        width: min(100% - 20px, 1280px);
+        padding: 26px 0 90px;
+    }
+
+    .category-icon-strip {
+        gap: 9px;
+    }
+
+    .category-icon-link {
+        flex-basis: 100px;
+        min-height: 120px;
+        padding: 12px 6px 9px;
+    }
+
+    .category-products-section > header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .category-products-section > header > a {
+        align-self: flex-end;
+    }
+}
+
+html[data-theme="light"] .recent-search-section,
+html[data-theme="light"] .discovery-section,
+html[data-theme="light"] .category-icon-link,
+html[data-theme="light"] .category-products-empty,
+html[data-theme="light"] .category-image-placeholder {
+    border-color: #e4e4e7;
+    background: #fff;
+}
+
+html[data-theme="light"] .recent-search-section h2,
+html[data-theme="light"] .discovery-section header h2 {
+    color: #18181b;
+}
+
+html[data-theme="light"] .brand-spotlight-list a,
+html[data-theme="light"] .recent-search-section a {
+    color: #27272a;
+    border-color: #e4e4e7;
+    background: #f4f4f5;
+}
+
+html[data-theme="light"] .category-directory > header h1,
+html[data-theme="light"] .category-icon-link,
+html[data-theme="light"] .category-products-section h2 {
+    color: #18181b;
+}
+
+html[data-theme="light"] .category-icon-link small {
+    color: #71717a;
+}
+
+html[data-theme="light"] .category-products-section {
+    border-color: #e4e4e7;
+}

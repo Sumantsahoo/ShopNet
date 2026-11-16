@@ -1,0 +1,101 @@
+.help-page {
+    width: min(100% - 32px, 900px);
+    min-height: 70vh;
+    margin: 0 auto;
+    padding: 44px 0 64px;
+}
+
+.help-heading {
+    margin-bottom: 24px;
+}
+
+.help-heading > span {
+    color: #fb923c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.help-heading h1 {
+    margin: 8px 0;
+    color: #fafafa;
+    font-size: clamp(1.9rem, 5vw, 2.7rem);
+}
+
+.help-heading p {
+    color: #a1a1aa;
+}
+
+.help-heading nav {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.help-heading nav a {
+    padding: 9px 13px;
+    border: 1px solid #3f3f46;
+    border-radius: 999px;
+    color: #d4d4d8;
+}
+
+.help-heading nav a.is-active {
+    border-color: #ea580c;
+    color: #fff;
+    background: #9a3412;
+}
+
+.faq-list,
+.policy-list {
+    display: grid;
+    gap: 12px;
+}
+
+.faq-list details,
+.policy-list article,
+.policy-note {
+    padding: 18px;
+    border: 1px solid #303036;
+    border-radius: 10px;
+    background: #111113;
+}
+
+.faq-list summary {
+    color: #fafafa;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.faq-list details p,
+.policy-list p {
+    margin: 12px 0 0;
+    color: #c4c4ca;
+    line-height: 1.65;
+}
+
+.help-orders-link {
+    padding: 16px 18px;
+    border: 1px solid #7c2d12;
+    border-radius: 10px;
+    color: #fb923c;
+    background: #18181b;
+    font-weight: 700;
+}
+
+.policy-list h2 {
+    margin: 0;
+    color: #fafafa;
+    font-size: 1.05rem;
+}
+
+.policy-list .policy-note {
+    color: #a1a1aa;
+    font-size: 0.88rem;
+}
+
+@media (max-width: 520px) {
+    .help-page {
+        width: min(100% - 24px, 900px);
+        padding: 28px 0 90px;
+    }
+}

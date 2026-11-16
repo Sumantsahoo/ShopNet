@@ -210,6 +210,26 @@ const updateDefaultAddress = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+    const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
+    if (name.length < 2 || name.length > 80) {
+        return res.status(400).json({ message: 'Name must be between 2 and 80 characters.' });
+    }
+
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            { $set: { name } },
+            { new: true, runValidators: true }
+        ).select('-password');
+        if (!user) return res.status(404).json({ message: 'Account not found.' });
+        return res.json({ message: 'Profile updated.', name: user.name });
+    } catch (error) {
+        console.error('Profile update failed:', error.message);
+        return res.status(500).json({ message: 'Could not update your profile.' });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
@@ -217,5 +237,6 @@ module.exports = {
     resetPasswordWithOtp,
     getUsers,
     getProfile,
-    updateDefaultAddress
+    updateDefaultAddress,
+    updateProfile
 };

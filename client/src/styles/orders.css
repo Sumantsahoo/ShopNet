@@ -136,7 +136,7 @@
 .order-timeline {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 12px;
     margin: 24px 0 0;
     padding: 0;
@@ -358,6 +358,22 @@
 
 .ordered-products li > .wishlist-control {
     flex: 0 0 auto;
+}
+
+.ordered-product-rating,
+.order-review-link {
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+
+.ordered-product-rating {
+    color: #fbbf24;
+}
+
+.order-review-link {
+    color: #fb923c;
+    font-weight: 700;
 }
 
 .ordered-products li {
