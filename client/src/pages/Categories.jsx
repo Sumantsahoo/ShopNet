@@ -1,30 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import ProductFilters from '../components/ProductFilters';
 import { apiFetch } from '../utils/api';
-import { getCategorySlug, PRODUCT_CATEGORIES } from '../utils/categories';
+import { getCategoryIcon, getCategoryImageUrl, getCategoryLabel, getCategorySlug, PRODUCT_CATEGORIES } from '../utils/categories';
 import { readProductCache, saveProductCache } from '../utils/productCache';
+import { getProductImageUrl } from '../utils/productImage';
+import { EMPTY_PRODUCT_FILTERS, filterAndSortProducts } from '../utils/productFilters';
 import '../styles/home.css';
 
-const CATEGORY_ICONS = {
-    fashion: '👗',
-    mobiles: '📱',
-    electronics: '🎧',
-    beauty: '💄',
-    'home-appliances': '🏠',
-    toys: '🧸',
-    bags: '👜',
-    'food-grocery': '🛒',
-    'auto-accessories': '🚗',
-    sports: '⚽',
-    furniture: '🛋️',
-    books: '📚',
-    'two-wheelers': '🏍️'
-};
-
 const Categories = () => {
+    const navigate = useNavigate();
+    const { category: routeCategory } = useParams();
     const [cachedProducts] = useState(readProductCache);
     const [products, setProducts] = useState(cachedProducts || []);
+    const [filters, setFilters] = useState(EMPTY_PRODUCT_FILTERS);
+    const [sortOrder, setSortOrder] = useState('recommended');
     const [loading, setLoading] = useState(cachedProducts === null);
     const [error, setError] = useState('');
 
@@ -35,7 +26,10 @@ const Categories = () => {
                 const response = await apiFetch('/api/products');
                 const data = await response.json();
                 if (!response.ok || !Array.isArray(data)) {
-                    throw new Error(data.message || 'Could not load product categories.');
+                    const message = data && typeof data.message === 'string'
+                        ? data.message
+                        : 'Could not load product categories.';
+                    throw new Error(message);
                 }
                 if (!cancelled) {
                     setProducts(data);
@@ -56,10 +50,14 @@ const Categories = () => {
         return () => { cancelled = true; };
     }, [cachedProducts]);
 
+    const catalogProducts = useMemo(
+        () => products.filter((product) => product.showInAllProducts !== false),
+        [products]
+    );
     const categories = useMemo(() => {
         const options = [...PRODUCT_CATEGORIES];
-        const knownSlugs = new Set(options.map((category) => category.slug));
-        products.forEach((product) => {
+        const knownSlugs = new Set(options.map((item) => item.slug));
+        catalogProducts.forEach((product) => {
             const label = String(product.category || '').trim();
             const slug = getCategorySlug(label);
             if (label && !knownSlugs.has(slug)) {
@@ -67,56 +65,93 @@ const Categories = () => {
                 knownSlugs.add(slug);
             }
         });
-        return options.map((category) => ({
-            ...category,
-            count: products.filter((product) => getCategorySlug(product.category) === category.slug).length
+        return options.map((item) => ({
+            ...item,
+            imageUrl: getCategoryImageUrl(item.slug, catalogProducts)
         }));
-    }, [products]);
+    }, [catalogProducts]);
+    const activeCategorySlug = routeCategory ? getCategorySlug(routeCategory) : '';
+    const categoryProducts = useMemo(() => catalogProducts.filter((product) => (
+        !activeCategorySlug || getCategorySlug(product.category) === activeCategorySlug
+    )), [activeCategorySlug, catalogProducts]);
+    const filteredProducts = useMemo(
+        () => filterAndSortProducts(categoryProducts, filters, sortOrder),
+        [categoryProducts, filters, sortOrder]
+    );
+    const categoryTitle = activeCategorySlug
+        ? categories.find((item) => item.slug === activeCategorySlug)?.label || getCategoryLabel(activeCategorySlug)
+        : 'Choose a category';
+
+    const selectCategory = (slug) => {
+        setFilters(EMPTY_PRODUCT_FILTERS);
+        setSortOrder('recommended');
+        navigate(slug ? `/category/${slug}` : '/categories');
+    };
 
     return (
-        <main className="category-directory">
-            <header>
-                <span>SHOPNEST 365</span>
-                <h1>Shop by category</h1>
-                <p>Explore every department, then find your next favorite product.</p>
-            </header>
-            {error && <p className="product-load-message" role={products.length ? 'status' : 'alert'}>{error}</p>}
-            {!loading && products.length === 0 && !error && <p className="category-products-empty">No products are available yet. Please check back soon.</p>}
-            <>
-                <nav className="category-icon-strip" aria-label="Shop by category">
-                    <Link to="/shop" className="category-icon-link">
-                        <span className="category-directory-icon" aria-hidden="true">▦</span>
-                        <strong>All</strong>
-                        <small>{products.length} products</small>
-                    </Link>
-                    {categories.map((category) => (
-                        <Link to={`/category/${category.slug}`} className="category-icon-link" key={category.slug}>
-                            <span className="category-directory-icon" aria-hidden="true">{CATEGORY_ICONS[category.slug] || '📦'}</span>
-                            <strong>{category.label}</strong>
-                            <small>{category.count} {category.count === 1 ? 'product' : 'products'}</small>
-                        </Link>
-                    ))}
-                </nav>
-
-                <section className="category-products-section">
-                    <header>
-                        <div>
-                            <span>SHOPNEST PICKS</span>
-                            <h2>Explore products</h2>
-                        </div>
-                        <Link to="/shop">View all products <span aria-hidden="true">→</span></Link>
-                    </header>
-                    {loading && products.length === 0 ? (
-                        <div className="category-image-placeholder">
-                            <img src="/logo.png" alt="ShopNest" />
-                        </div>
-                    ) : products.length > 0 ? (
-                        <div className="product-grid">
-                            {products.map((product) => <ProductCard key={product._id} product={product} />)}
-                        </div>
-                    ) : null}
-                </section>
-            </>
+        <main className="category-shop-layout">
+            <aside className="category-filter-sidebar" aria-label="Product categories">
+                <h1>Categories</h1>
+                {categories.map((category) => (
+                    <button
+                        className={routeCategory === category.slug ? 'is-selected' : ''}
+                        key={category.slug}
+                        type="button"
+                        onClick={() => selectCategory(category.slug)}
+                    >
+                        <span className="category-filter-icon" aria-hidden="true">
+                            <img
+                                src={getProductImageUrl(category.imageUrl, 80)}
+                                alt=""
+                                onError={(event) => { event.currentTarget.hidden = true; }}
+                            />
+                            <span>{getCategoryIcon(category.slug)}</span>
+                        </span>
+                        <span className="category-filter-name">{category.label}</span>
+                    </button>
+                ))}
+            </aside>
+            <section className="category-shop-results">
+                <header className="category-shop-heading">
+                    <div><h2>{categoryTitle}</h2></div>
+                    {activeCategorySlug && (
+                        <p>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}</p>
+                    )}
+                </header>
+                {error && <p className="product-load-message" role={products.length ? 'status' : 'alert'}>{error}</p>}
+                {activeCategorySlug && !loading && catalogProducts.length > 0 && (
+                    <ProductFilters
+                        products={categoryProducts.length ? categoryProducts : catalogProducts}
+                        optionProducts={catalogProducts}
+                        filters={filters}
+                        onFilterChange={(name, value) => setFilters((current) => ({ ...current, [name]: value }))}
+                        sortOrder={sortOrder}
+                        onSortChange={setSortOrder}
+                        onClear={() => {
+                            setFilters(EMPTY_PRODUCT_FILTERS);
+                            setSortOrder('recommended');
+                        }}
+                    />
+                )}
+                {!activeCategorySlug ? (
+                    <section className="category-products-empty">
+                        <h2>Select a category to browse products</h2>
+                        <p>Choose Fashion or another category from the list.</p>
+                    </section>
+                ) : loading && products.length === 0 ? (
+                    <div className="category-image-placeholder"><img src="/logo.png" alt="ShopNest" /></div>
+                ) : filteredProducts.length > 0 ? (
+                    <div className="product-grid">
+                        {filteredProducts.map((product) => <ProductCard key={product._id} product={product} />)}
+                    </div>
+                ) : (
+                    <section className="category-products-empty">
+                        <h2>{categoryProducts.length ? 'No products match these filters' : 'No products in this category yet'}</h2>
+                        <p>Try another category or clear some filters.</p>
+                        <Link to="/shop">Browse the full catalog</Link>
+                    </section>
+                )}
+            </section>
         </main>
     );
 };

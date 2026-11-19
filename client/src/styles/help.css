@@ -99,3 +99,41 @@
         padding: 28px 0 90px;
     }
 }
+
+html[data-theme="light"] .help-heading h1,
+html[data-theme="light"] .faq-list summary,
+html[data-theme="light"] .policy-list h2 {
+    color: #18181b;
+}
+
+html[data-theme="light"] .help-heading p,
+html[data-theme="light"] .faq-list details p,
+html[data-theme="light"] .policy-list p,
+html[data-theme="light"] .policy-list .policy-note {
+    color: #52525b;
+}
+
+html[data-theme="light"] .help-heading nav a {
+    border-color: #d4d4d8;
+    color: #27272a;
+    background: #fff;
+}
+
+html[data-theme="light"] .help-heading nav a.is-active {
+    border-color: #c2410c;
+    color: #fff;
+    background: #c2410c;
+}
+
+html[data-theme="light"] .faq-list details,
+html[data-theme="light"] .policy-list article,
+html[data-theme="light"] .policy-note {
+    border-color: #e4e4e7;
+    background: #fff;
+}
+
+html[data-theme="light"] .help-orders-link {
+    border-color: #fdba74;
+    color: #9a3412;
+    background: #fff7ed;
+}

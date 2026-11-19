@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { createHash, randomInt, timingSafeEqual } = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const { isCofounder } = require('../middleware/cofounderMiddleWare');
 
 const generateToken = (userId) => {
     return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -32,6 +33,7 @@ const registerUser = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            isCofounder: isCofounder(user),
             token: generateToken(user._id)
         });
     } catch (error) {
@@ -54,6 +56,9 @@ const loginUser = async (req, res) => {
         const user = await User.findOne({ email: normalizedEmail });
 
         if (user && (await bcrypt.compare(password, user.password))) {
+            if (user.accountDisabled) {
+                return res.status(403).json({ message: 'This account has been deactivated. Contact ShopNest management.' });
+            }
             user.lastLoginAt = new Date();
             await user.save();
             return res.json({
@@ -61,6 +66,9 @@ const loginUser = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                isCofounder: isCofounder(user),
+                employeePosition: user.employeePosition,
+                employeeCompanyId: user.employeeCompanyId,
                 token: generateToken(user._id)
             });
         }
@@ -159,10 +167,89 @@ const resetPasswordWithOtp = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password');
-        return res.json(users);
+        const pageValue = req.query.page;
+        if (pageValue !== undefined && (typeof pageValue !== 'string' || !/^[1-9]\d*$/.test(pageValue) || !Number.isSafeInteger(Number(pageValue)))) {
+            return res.status(400).json({ message: 'Page must be a positive whole number.' });
+        }
+        const requestedPage = pageValue === undefined ? 1 : Number(pageValue);
+        const filters = { role: 'user' };
+        let invalidFilter = false;
+        ['state', 'district', 'block', 'village'].forEach((field) => {
+            const filterValue = req.query[field];
+            if (filterValue !== undefined && typeof filterValue !== 'string') {
+                invalidFilter = true;
+                return;
+            }
+            const value = typeof filterValue === 'string' ? filterValue.trim() : '';
+            if (value) {
+                if (value.length > 100) {
+                    invalidFilter = true;
+                    return;
+                }
+                const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                filters[`defaultAddress.${field}`] = { $regex: `^${escapedValue}$`, $options: 'i' };
+            }
+        });
+        if (invalidFilter) {
+            return res.status(400).json({ message: 'Location filters must be 100 characters or fewer.' });
+        }
+        const limit = 50;
+        const total = await User.countDocuments(filters);
+        const pages = Math.ceil(total / limit);
+        const page = Math.min(requestedPage, Math.max(pages, 1));
+        const users = await User.find(filters)
+            .select('name email joinedAt lastLoginAt defaultAddress')
+            .sort({ joinedAt: -1, _id: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .lean();
+        return res.json({ users, total, page, pages, limit });
     } catch (error) {
+        console.error('Could not load customer records:', error.message);
         return res.status(500).json({ message: 'server error' });
+    }
+};
+
+const getCustomerLocationOptions = async (req, res) => {
+    const locationFields = ['state', 'district', 'block'];
+    const values = {};
+    for (const field of locationFields) {
+        const value = req.query[field];
+        if (value !== undefined && (typeof value !== 'string' || value.trim().length > 100)) {
+            return res.status(400).json({ message: 'Location filters must be 100 characters or fewer.' });
+        }
+        values[field] = typeof value === 'string' ? value.trim() : '';
+    }
+
+    const exactValue = (value) => {
+        const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return { $regex: `^${escapedValue}$`, $options: 'i' };
+    };
+    try {
+        const parentFilters = { role: 'user' };
+        if (values.state) parentFilters['defaultAddress.state'] = exactValue(values.state);
+        if (values.district) parentFilters['defaultAddress.district'] = exactValue(values.district);
+        let blocks = [];
+        let villages = [];
+        if (values.state && values.district) {
+            blocks = await User.distinct('defaultAddress.block', {
+                ...parentFilters,
+                'defaultAddress.block': { $nin: ['', null] }
+            });
+            blocks = blocks.filter((value) => typeof value === 'string' && value.trim()).sort((left, right) => left.localeCompare(right));
+        }
+        if (values.state && values.district && values.block) {
+            villages = await User.distinct('defaultAddress.village', {
+                ...parentFilters,
+                'defaultAddress.block': exactValue(values.block),
+                'defaultAddress.village': { $nin: ['', null] }
+            });
+            villages = villages.filter((value) => typeof value === 'string' && value.trim()).sort((left, right) => left.localeCompare(right));
+        }
+        return res.json({ blocks, villages });
+    } catch (error) {
+        console.error('Could not load customer location options:', error.message);
+        return res.status(500).json({ message: 'Could not load block and village options.' });
     }
 };
 
@@ -172,12 +259,15 @@ const getProfile = async (req, res) => {
         name: req.user.name,
         email: req.user.email,
         role: req.user.role,
+        isCofounder: isCofounder(req.user),
+        employeePosition: req.user.employeePosition,
+        employeeCompanyId: req.user.employeeCompanyId,
         defaultAddress: req.user.defaultAddress || null
     });
 };
 
 const updateDefaultAddress = async (req, res) => {
-    const { fullName, phone, altPhone, street, district, state, postalCode } = req.body;
+    const { fullName, phone, altPhone, street, district, state, block, village, postalCode } = req.body;
     const defaultAddress = {
         fullName: typeof fullName === 'string' ? fullName.trim() : '',
         phone: typeof phone === 'string' ? phone.trim() : '',
@@ -185,12 +275,21 @@ const updateDefaultAddress = async (req, res) => {
         street: typeof street === 'string' ? street.trim() : '',
         district: typeof district === 'string' ? district.trim() : '',
         state: typeof state === 'string' ? state.trim() : '',
+        block: typeof block === 'string' ? block.trim() : '',
+        village: typeof village === 'string' ? village.trim() : '',
         postalCode: typeof postalCode === 'string' ? postalCode.trim() : '',
         country: 'India'
     };
     const validIndianMobile = (value) => /^[6-9]\d{9}$/.test(value);
     if ([defaultAddress.fullName, defaultAddress.phone, defaultAddress.street, defaultAddress.district, defaultAddress.state].some((value) => !value) || !/^\d{6}$/.test(defaultAddress.postalCode)) {
         return res.status(400).json({ message: 'Enter your name, phone, street, state, district, and valid six-digit PIN code.' });
+    }
+    if (defaultAddress.fullName.length > 80 || defaultAddress.street.length > 300 ||
+        defaultAddress.district.length > 100 || defaultAddress.state.length > 100) {
+        return res.status(400).json({ message: 'Name, street, state, or district is too long.' });
+    }
+    if (defaultAddress.block.length > 100 || defaultAddress.village.length > 100) {
+        return res.status(400).json({ message: 'Block and village names must be 100 characters or fewer.' });
     }
     if (!validIndianMobile(defaultAddress.phone) || (defaultAddress.altPhone && !validIndianMobile(defaultAddress.altPhone))) {
         return res.status(400).json({ message: 'Phone numbers must be valid 10-digit Indian mobile numbers.' });
@@ -236,6 +335,7 @@ module.exports = {
     requestPasswordResetOtp,
     resetPasswordWithOtp,
     getUsers,
+    getCustomerLocationOptions,
     getProfile,
     updateDefaultAddress,
     updateProfile

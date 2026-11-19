@@ -10,7 +10,7 @@ const messages = {
     addToCart: 'Add to Shopping Cart', addedToCart: 'Product added to cart.', productDescription: 'Product Description', inStock: 'In stock', unitsAvailable: 'units available', outOfStock: 'Temporarily out of stock',
     checkout: 'Checkout', orderConfirmation: 'Order confirmation', payment: 'Payment', deliveryDetails: 'Delivery details', confirmYou: 'Confirm it is you', completePayment: 'Complete your payment', shippingAddress: 'Shipping address',
     otpPrompt: 'Enter the six-digit code sent to {email}. This confirms you want to place the order.', paymentPrompt: 'Your order is saved. Choose UPI in Razorpay Checkout to use an available UPI app or scan its QR code.',
-    orderCodePrompt: 'We will email a confirmation code before your order is placed.', fullName: 'Full name', phone: 'Phone number', alternativePhone: 'Alternative phone', optional: 'Optional', street: 'Street address',
+    orderCodePrompt: 'We will email a confirmation code before your order is placed.', fullName: 'Full name', phone: 'Phone number', alternativePhone: 'Alternative phone', optional: 'Optional', street: 'Street address', block: 'Block', village: 'Village',
     state: 'State', district: 'District', pinCode: 'PIN code', selectState: 'Select your state', selectDistrict: 'Select your district', enterDistrict: 'Enter your district', selectStateFirst: 'Select a state first',
     sixDigitPin: '6-digit PIN code', lookingUpPin: 'Looking up PIN code...', emailCode: 'Email confirmation code', enterCode: 'Enter the 6-digit code', resendCode: 'Resend confirmation code',
     emailMeCode: 'Email me a confirmation code', verifyPlaceOrder: 'Verify code and place order', retryPayment: 'Retry payment', pleaseWait: 'Please wait...',

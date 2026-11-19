@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import WishlistButton from '../components/WishlistButton';
+import ProductPrice from '../components/ProductPrice';
 import { useLanguage } from '../context/LanguageContext';
 import { apiFetch } from '../utils/api';
 import '../styles/orders.css';
@@ -190,6 +191,7 @@ const Orders = () => {
                                             {order.status === 'delivered' && item.product?._id && (
                                                 <Link className="order-review-link" to={`/products/${item.product._id}#product-reviews`}>Rate & review</Link>
                                             )}
+                                            <ProductPrice product={item} className="is-compact" />
                                             <strong>₹{(item.price * item.qty).toFixed(2)}</strong>
                                         </li>
                                     ))}

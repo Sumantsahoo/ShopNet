@@ -45,7 +45,7 @@ ul{
     list-style:none;
 }
 .btn{
-    background: linear-gradient (135deg,#f97316 0%,#ea580c 100%);
+    background: linear-gradient(135deg,#f97316 0%,#ea580c 100%);
     color:#fff;
     padding:12px 24px;
     border:none;
@@ -95,7 +95,27 @@ h2{
 
 html[data-theme="light"] body {
     color: #18181b;
-    background: #f4f4f5;
+    background: #fff;
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4,
+html[data-theme="light"] p,
+html[data-theme="light"] label,
+html[data-theme="light"] small,
+html[data-theme="light"] th,
+html[data-theme="light"] td {
+    color: #18181b;
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4 {
+    background: none;
+    -webkit-text-fill-color: #18181b;
 }
 
 html[data-theme="light"] .navbar {
@@ -104,7 +124,8 @@ html[data-theme="light"] .navbar {
 }
 
 html[data-theme="light"] .navbar-brand a,
-html[data-theme="light"] .navbar-links a {
+html[data-theme="light"] .navbar-links a,
+html[data-theme="light"] .navbar-admin-menu summary {
     color: #18181b;
 }
 
@@ -130,6 +151,33 @@ html[data-theme="light"] .mobile-bottom-nav a {
     color: #52525b;
 }
 
+html[data-theme="light"] .mobile-admin-menu summary {
+    color: #52525b;
+}
+
+html[data-theme="light"] .navbar-admin-menu summary {
+    border-color: #d4d4d8;
+    background: #fff;
+}
+
+html[data-theme="light"] .navbar-admin-menu-panel,
+html[data-theme="light"] .mobile-admin-menu-panel {
+    border-color: #d4d4d8;
+    background: #fff;
+    box-shadow: 0 16px 38px rgba(24, 24, 27, 0.16);
+}
+
+html[data-theme="light"] .navbar-admin-menu-panel a,
+html[data-theme="light"] .mobile-admin-menu-panel a {
+    color: #27272a;
+}
+
+html[data-theme="light"] .navbar-admin-menu-panel a:hover,
+html[data-theme="light"] .mobile-admin-menu-panel a:hover {
+    color: #18181b;
+    background: #f4f4f5;
+}
+
 html[data-theme="light"] .category-sidebar,
 html[data-theme="light"] .product-card,
 html[data-theme="light"] .product-detail,
@@ -150,6 +198,29 @@ html[data-theme="light"] .orders-page .order-card {
     background: #fff;
 }
 
+html[data-theme="light"] .category-shop-layout,
+html[data-theme="light"] .category-shop-results,
+html[data-theme="light"] .storefront-layout,
+html[data-theme="light"] .storefront-results,
+html[data-theme="light"] .home-container {
+    color: #18181b;
+    background: #fff;
+}
+
+html[data-theme="light"] .category-filter-sidebar h1,
+html[data-theme="light"] .category-filter-sidebar button,
+html[data-theme="light"] .category-shop-heading h2,
+html[data-theme="light"] .category-shop-heading p {
+    color: #18181b;
+}
+
+html[data-theme="light"] .category-filter-sidebar button.is-selected,
+html[data-theme="light"] .category-filter-sidebar button:hover,
+html[data-theme="light"] .category-chips a.is-active,
+html[data-theme="light"] .category-sidebar a.is-active {
+    color: #fff;
+}
+
 html[data-theme="light"] .storefront-heading h1,
 html[data-theme="light"] .profile-identity h2,
 html[data-theme="light"] .profile-section-heading h2,
@@ -160,6 +231,12 @@ html[data-theme="light"] .product-reviews > header h2,
 html[data-theme="light"] .faq-list summary,
 html[data-theme="light"] .policy-list h2 {
     color: #18181b;
+}
+
+html[data-theme="light"] .product-brand,
+html[data-theme="light"] .product-info .product-price del,
+html[data-theme="light"] .product-card-rating small {
+    color: #52525b;
 }
 
 html[data-theme="light"] .product-image,
@@ -200,8 +277,39 @@ html[data-theme="light"] .profile-theme-toggle {
     color: #27272a;
 }
 
+html[data-theme="light"] .wishlist-button {
+    color: #7f1d1d;
+    border-color: #fda4af;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(24, 24, 27, 0.16);
+}
+
+html[data-theme="light"] .wishlist-button > span:first-child {
+    color: #be123c;
+}
+
+html[data-theme="light"] .wishlist-button:hover,
+html[data-theme="light"] .wishlist-button.is-saved {
+    color: #881337;
+    border-color: #fb7185;
+    background: #ffe4e6;
+}
+
+html[data-theme="light"] .wishlist-error {
+    color: #b91c1c;
+}
+
 html[data-theme="light"] .product-delivery-card p,
 html[data-theme="light"] .product-description p,
 html[data-theme="light"] .product-review-list article p {
     color: #52525b;
+}
+
+html[data-theme="light"] .hero-banner h1 {
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+}
+
+html[data-theme="light"] .hero-banner p {
+    color: #e4e4e7;
 }

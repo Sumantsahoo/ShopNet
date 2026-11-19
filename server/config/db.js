@@ -3,12 +3,14 @@ const mongoose=require('mongoose');
 const bcrypt=require('bcrypt');
 const User=require('../model/user');
 
-const dnsServers=(process.env.MONGO_DNS_SERVERS||'1.1.1.1,8.8.8.8')
+const dnsServers=(process.env.MONGO_DNS_SERVERS||'')
     .split(',')
     .map((server)=>server.trim())
     .filter(Boolean);
 
-dns.setServers(dnsServers);
+if (dnsServers.length) {
+    dns.setServers(dnsServers);
+}
 
 const connectDB=async ()=>{
     try{

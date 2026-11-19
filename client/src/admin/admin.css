@@ -60,6 +60,93 @@
     color: #fb923c;
 }
 
+.admin-profile-link:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.customer-filter-card {
+    max-width: none;
+}
+
+.customer-filter-form {
+    max-width: none;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+}
+
+.customer-filter-actions {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 18px;
+}
+
+.customer-count {
+    margin: 20px 0 12px;
+    color: #fdba74;
+    font-weight: 700;
+}
+
+.customer-pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    color: #d4d4d8;
+}
+
+.employee-candidate-list {
+    display: grid;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+.employee-candidate-list button {
+    display: grid;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid #52525b;
+    border-radius: 6px;
+    color: #f4f4f5;
+    background: #18181b;
+    text-align: left;
+    cursor: pointer;
+}
+
+.employee-candidate-list button.is-selected {
+    border-color: #ea580c;
+    background: #431407;
+}
+
+.employee-candidate-list button span {
+    color: #a1a1aa;
+}
+
+.employee-assignment-form {
+    margin-top: 18px;
+}
+
+.employee-pending-accounts {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid #3f3f46;
+}
+
+.employee-pending-accounts h3 {
+    margin: 0 0 8px;
+    color: #fafafa;
+    font-size: 1rem;
+}
+
+.employee-pending-accounts > p {
+    margin: 0 0 12px;
+    color: #a1a1aa;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
 .admin-stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -113,13 +200,14 @@
     padding: 20px 18px 20px 0;
     border-bottom: 1px solid #3f3f46;
     font-weight: 700;
+    font-size: 0.9rem;
 }
 
 .admin-shortcuts a span {
     display: block;
     margin-top: 6px;
     color: #a1a1aa;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 400;
 }
 
@@ -256,8 +344,147 @@
     font-size: 0.9rem;
 }
 
+.admin-settings-card {
+    max-width: 860px;
+    padding: clamp(18px, 4vw, 28px);
+    border: 1px solid #3f3f46;
+    border-radius: 12px;
+    background: #18181b;
+}
+
+.hero-slide-editor {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #3f3f46;
+    border-radius: 9px;
+}
+
+.hero-slide-editor legend {
+    padding: 0 7px;
+    color: #fb923c;
+    font-weight: 700;
+}
+
+.hero-slide-editor .admin-product-image-preview {
+    max-height: 200px;
+    aspect-ratio: 16 / 7;
+}
+
+.seasonal-deals-form {
+    max-width: none;
+}
+
+.seasonal-deals-form .admin-table select {
+    width: auto;
+    min-width: 130px;
+    padding: 8px;
+}
+
+.seasonal-deals-form .admin-table input[type="number"] {
+    width: 100px;
+    padding: 8px;
+}
+
+.homepage-section-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin: 18px 0;
+}
+
+.homepage-section-shortcuts a {
+    color: #fb923c;
+    font-weight: 700;
+}
+
+.homepage-sections-table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ea580c;
+}
+
+.homepage-sections-table td:first-child {
+    min-width: 190px;
+    white-space: normal;
+}
+
+.homepage-sections-table td:last-child {
+    text-align: center;
+}
+
+.seasonal-deals-form .admin-table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.admin-settings-card h2 {
+    margin: 0 0 8px;
+}
+
+.admin-settings-card > p {
+    margin: 0 0 22px;
+    color: #a1a1aa;
+    line-height: 1.5;
+}
+
+.admin-section-settings-card {
+    margin-top: 20px;
+}
+
+.admin-section-settings-card .admin-action {
+    width: fit-content;
+}
+
+.admin-edit-form input[type="checkbox"] {
+    width: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    accent-color: #ea580c;
+}
+
+.admin-edit-form .product-visibility-options {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #3f3f46;
+    border-radius: 8px;
+    color: #d4d4d8;
+}
+
+.admin-edit-form .product-visibility-options legend {
+    padding: 0 6px;
+    color: #fb923c;
+    font-weight: 700;
+}
+
+.admin-edit-form .product-visibility-options label {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+}
+
+.admin-edit-form .product-visibility-options input {
+    width: auto;
+    margin: 3px 0 0;
+}
+
+.admin-edit-form .admin-fast-delivery {
+    display: flex;
+    align-self: end;
+    min-height: 42px;
+}
+
+.admin-edit-form .admin-fast-delivery input {
+    width: auto;
+    margin: 0;
+    padding: 0;
+}
+
 .admin-edit-form input,
-.admin-edit-form textarea {
+.admin-edit-form textarea,
+.admin-edit-form select {
     width: 100%;
     border: 1px solid #52525b;
     border-radius: 4px;
@@ -265,6 +492,17 @@
     background: #18181b;
     color: #fafafa;
     font: inherit;
+}
+
+.admin-product-image-preview {
+    display: block;
+    width: min(100%, 300px);
+    max-height: 300px;
+    aspect-ratio: 1;
+    object-fit: contain;
+    border: 1px solid #3f3f46;
+    border-radius: 8px;
+    background: #18181b;
 }
 
 .admin-form-row {
@@ -292,6 +530,126 @@
     color: #a1a1aa;
 }
 
+html[data-theme="light"] .admin-page {
+    color: #18181b;
+}
+
+html[data-theme="light"] .admin-heading {
+    border-color: #d4d4d8;
+}
+
+html[data-theme="light"] .admin-settings-card,
+html[data-theme="light"] .admin-table th {
+    border-color: #d4d4d8;
+    color: #18181b;
+    background: #fff;
+}
+
+html[data-theme="light"] .employee-pending-accounts {
+    border-color: #e4e4e7;
+}
+
+html[data-theme="light"] .employee-pending-accounts h3 {
+    color: #18181b;
+}
+
+html[data-theme="light"] .employee-pending-accounts > p {
+    color: #52525b;
+}
+
+html[data-theme="light"] .admin-stats article {
+    border-color: #e4e4e7;
+    border-top-color: #ea580c;
+    color: #18181b;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(24, 24, 27, 0.06);
+}
+
+html[data-theme="light"] .admin-stats span,
+html[data-theme="light"] .admin-stats small,
+html[data-theme="light"] .admin-shortcuts a span,
+html[data-theme="light"] .admin-profile-shortcuts a span {
+    color: #52525b;
+}
+
+html[data-theme="light"] .admin-profile-overview {
+    border-color: #e4e4e7;
+    background: linear-gradient(145deg, #fff, #f8fafc);
+}
+
+html[data-theme="light"] .admin-low-stock-list {
+    border-color: #e4e4e7;
+    background: #fff;
+}
+
+html[data-theme="light"] .admin-low-stock-list h3,
+html[data-theme="light"] .admin-profile-shortcuts a {
+    color: #18181b;
+}
+
+html[data-theme="light"] .admin-low-stock-list > div {
+    border-color: #e4e4e7;
+}
+
+html[data-theme="light"] .admin-shortcuts,
+html[data-theme="light"] .admin-profile-shortcuts {
+    border-color: #e4e4e7;
+}
+
+html[data-theme="light"] .admin-edit-form label,
+html[data-theme="light"] .admin-settings-card > p,
+html[data-theme="light"] .admin-status,
+html[data-theme="light"] .admin-profile-link,
+html[data-theme="light"] .customer-pagination {
+    color: #52525b;
+}
+
+html[data-theme="light"] .customer-count {
+    color: #9a3412;
+}
+
+html[data-theme="light"] .employee-candidate-list button {
+    border-color: #d4d4d8;
+    color: #18181b;
+    background: #fff;
+}
+
+html[data-theme="light"] .employee-candidate-list button.is-selected {
+    border-color: #ea580c;
+    background: #fff7ed;
+}
+
+html[data-theme="light"] .employee-candidate-list button span {
+    color: #52525b;
+}
+
+html[data-theme="light"] .admin-edit-form input,
+html[data-theme="light"] .admin-edit-form textarea,
+html[data-theme="light"] .admin-edit-form select,
+html[data-theme="light"] .seasonal-deals-form .admin-table select {
+    border-color: #d4d4d8;
+    color: #18181b;
+    background: #fff;
+}
+
+html[data-theme="light"] .admin-table,
+html[data-theme="light"] .admin-table td {
+    color: #27272a;
+}
+
+html[data-theme="light"] .admin-table td,
+html[data-theme="light"] .hero-slide-editor {
+    border-color: #e4e4e7;
+}
+
+html[data-theme="light"] .homepage-section-shortcuts a {
+    color: #9a3412;
+}
+
+html[data-theme="light"] .homepage-sections-table {
+    background: #fff;
+}
+
 @media (max-width: 760px) {
     .admin-page {
         padding: 30px 16px 48px;
@@ -310,6 +668,10 @@
     }
 
     .admin-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .customer-filter-form {
         grid-template-columns: 1fr;
     }
 }

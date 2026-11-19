@@ -124,6 +124,10 @@ html[data-theme="light"] .cart-item-details h4 {
 }
 
 .cart-item-details p {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px;
     color: #f97316;
     font-weight: 600;
 }
@@ -160,6 +164,14 @@ html[data-theme="light"] .cart-item-details h4 {
     border-radius: 12px;
 }
 
+.cart-recommendations {
+    margin-top: 30px;
+}
+
+.cart-item-details .product-price-breakdown {
+    justify-items: start;
+}
+
 .cart-summary h3 {
     margin: 0;
 }
@@ -173,6 +185,43 @@ html[data-theme="light"] .cart-item-details h4 {
 .cart-summary .btn:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+}
+
+.cart-price-status {
+    margin: 0;
+    color: #a1a1aa;
+    font-size: 0.9rem;
+}
+
+.cart-price-status.is-error {
+    color: #fca5a5;
+}
+
+.cart-price-status button {
+    padding: 0;
+    border: 0;
+    color: #fb923c;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+html[data-theme="light"] .cart-price-status {
+    color: #52525b;
+}
+
+html[data-theme="light"] .cart-price-status.is-error {
+    color: #b91c1c;
+}
+
+html[data-theme="light"] .cart-price-status button {
+    color: #9a3412;
+}
+
+html[data-theme="light"] .cart-item-details p del {
+    color: #52525b;
 }
 
 @media (max-width: 600px) {

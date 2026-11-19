@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect } = require('../middleware/authMiddleWare');
-const { admin } = require('../middleware/adminMiddleWare');
+const { commerceStaff } = require('../middleware/commerceStaffMiddleWare');
 const {
     requestOrderOtp,
     verifyOrderOtp,
@@ -21,10 +21,10 @@ router.post('/verify-otp', protect, verifyOrderOtp);
 router.post('/', protect, createOrder);
 router.get('/myorders', protect, myOrders);
 router.post('/:id/exchange-request', protect, requestExchange);
-router.get('/', protect, admin, getOrders);
-router.put('/:id/payment-confirmation', protect, admin, confirmManualPayment);
-router.put('/:id/exchange-request', protect, admin, reviewExchangeRequest);
+router.get('/', protect, commerceStaff, getOrders);
+router.put('/:id/payment-confirmation', protect, commerceStaff, confirmManualPayment);
+router.put('/:id/exchange-request', protect, commerceStaff, reviewExchangeRequest);
 router.get('/:id', protect, getOrderById);
-router.put('/:id/status', protect, admin, updateOrderStatus);
+router.put('/:id/status', protect, commerceStaff, updateOrderStatus);
 
 module.exports = router;

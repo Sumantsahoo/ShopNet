@@ -15,7 +15,7 @@ const Profile = () => {
     const { language, setLanguage, t } = useLanguage();
     const { wishlistItems, wishlistLoading } = useWishlist();
     const [defaultAddress, setDefaultAddress] = useState({
-        fullName: user?.name || '', phone: '', street: '', district: '', state: '', postalCode: '', country: 'India'
+        fullName: user?.name || '', phone: '', street: '', district: '', block: '', village: '', state: '', postalCode: '', country: 'India'
     });
     const [addressLoading, setAddressLoading] = useState(true);
     const [savedAddress, setSavedAddress] = useState(null);
@@ -60,6 +60,8 @@ const Profile = () => {
                     altPhone: data.defaultAddress.altPhone || '',
                     street: data.defaultAddress.street || '',
                     district: data.defaultAddress.district || '',
+                    block: data.defaultAddress.block || '',
+                    village: data.defaultAddress.village || '',
                     state: data.defaultAddress.state || '',
                     postalCode: data.defaultAddress.postalCode || '',
                     country: 'India'
@@ -186,7 +188,7 @@ const Profile = () => {
 
     const cancelAddressEdit = () => {
         setDefaultAddress(savedAddress || {
-            fullName: user.name || '', phone: '', altPhone: '', street: '', district: '', state: '', postalCode: '', country: 'India'
+            fullName: user.name || '', phone: '', altPhone: '', street: '', district: '', block: '', village: '', state: '', postalCode: '', country: 'India'
         });
         setAddressEditing(false);
         setAddressMessage('');
@@ -273,7 +275,7 @@ const Profile = () => {
                             <strong>{savedAddress.fullName}</strong>
                             <span>{savedAddress.phone}{savedAddress.altPhone ? ` · Alt: ${savedAddress.altPhone}` : ''}</span>
                             <span>{savedAddress.street}</span>
-                            <span>{savedAddress.district}, {savedAddress.state} {savedAddress.postalCode}</span>
+                            <span>{[savedAddress.village, savedAddress.block, savedAddress.district, savedAddress.state].filter(Boolean).join(', ')} {savedAddress.postalCode}</span>
                             {addressMessage && <p className="profile-address-status" role="status">{addressMessage}</p>}
                         </div>
                     ) : <p className="profile-address-status">{t('noAddress')}</p>
@@ -289,7 +291,7 @@ const Profile = () => {
                                     autoComplete="address-level1"
                                     required
                                     value={defaultAddress.state}
-                                    onChange={(event) => setDefaultAddress({ ...defaultAddress, state: event.target.value, district: '' })}
+                                    onChange={(event) => setDefaultAddress({ ...defaultAddress, state: event.target.value, district: '', block: '', village: '' })}
                                 >
                                     <option value="">{t('selectState')}</option>
                                     {INDIAN_STATES_AND_UTS.map((state) => <option key={state} value={state}>{state}</option>)}
@@ -300,7 +302,7 @@ const Profile = () => {
                                     <select
                                         required
                                         value={defaultAddress.district}
-                                        onChange={(event) => setDefaultAddress({ ...defaultAddress, district: event.target.value })}
+                                        onChange={(event) => setDefaultAddress({ ...defaultAddress, district: event.target.value, block: '', village: '' })}
                                     >
                                         <option value="">{t('selectDistrict')}</option>
                                         {Array.from(new Set([...DISTRICTS_BY_STATE[defaultAddress.state], ...(defaultAddress.district ? [defaultAddress.district] : [])])).map((district) => <option key={district} value={district}>{district}</option>)}
@@ -311,10 +313,12 @@ const Profile = () => {
                                         disabled={!defaultAddress.state}
                                         placeholder={defaultAddress.state ? t('enterDistrict') : t('selectStateFirst')}
                                         value={defaultAddress.district}
-                                        onChange={(event) => setDefaultAddress({ ...defaultAddress, district: event.target.value })}
+                                        onChange={(event) => setDefaultAddress({ ...defaultAddress, district: event.target.value, block: '', village: '' })}
                                     />
                                 )}
                             </label>
+                            <label>{t('block')}<input maxLength={100} value={defaultAddress.block} onChange={(event) => setDefaultAddress({ ...defaultAddress, block: event.target.value })} /></label>
+                            <label>{t('village')}<input maxLength={100} value={defaultAddress.village} onChange={(event) => setDefaultAddress({ ...defaultAddress, village: event.target.value })} /></label>
                             <label>{t('pinCode')}
                                 <input
                                     inputMode="numeric"

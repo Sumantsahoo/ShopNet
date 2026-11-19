@@ -17,6 +17,8 @@ const userSchema=new mongoose.Schema({
         street:{type:String,trim:true},
         district:{type:String,trim:true},
         state:{type:String,trim:true},
+        block:{type:String,trim:true},
+        village:{type:String,trim:true},
         postalCode:{type:String,trim:true},
         country:{type:String,default:'India'}
     },
@@ -24,15 +26,37 @@ const userSchema=new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Product'
     }],
+    recentSearches:{type:[String],default:[]},
+    searchHistory:[{
+        term:{type:String,required:true},
+        searchedAt:{type:Date,required:true,default:Date.now}
+    }],
+    recentProducts:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Product'
+    }],
+    productViewHistory:[{
+        product:{type:mongoose.Schema.Types.ObjectId,ref:'Product',required:true},
+        viewedAt:{type:Date,required:true,default:Date.now}
+    }],
+    cartHistory:[{
+        product:{type:mongoose.Schema.Types.ObjectId,ref:'Product',required:true},
+        addedAt:{type:Date,required:true,default:Date.now}
+    }],
     password:{
         type:String,
         required:true
     },
     role:{
         type:String,
-        enum:['user','admin'],
+        enum:['user','admin','employee'],
         default:'user'
     },
+    accountDisabled:{type:Boolean,default:false},
+    employeePosition:{type:String,trim:true,default:''},
+    employeeCompanyId:{type:String,trim:true,default:''},
+    employmentStatus:{type:String,enum:['active','inactive'],default:'active'},
+    employeeStartedAt:{type:Date},
     joinedAt:{type:Date},
     lastLoginAt:{type:Date},
     orderOtpHash: String,

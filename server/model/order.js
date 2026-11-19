@@ -10,6 +10,11 @@ const orderSchema=new mongoose.Schema({
             name:{type:String,required:true},
             qty:{type:Number,required:true,min:1},
             price:{type:Number,required:true},
+            regularPrice:{type:Number,min:0},
+            originalPrice:{type:Number,min:0},
+            discountPercent:{type:Number,min:0,max:100},
+            additionalDiscountPercent:{type:Number,min:0,max:100},
+            additionalOfferActive:{type:Boolean,default:false},
             product:{type:mongoose.Schema.Types.ObjectId,ref:'Product',required:true}
         }
     ],
@@ -20,6 +25,8 @@ const orderSchema=new mongoose.Schema({
         address:{type:String,required:true},
         city:{type:String,required:true},
         district:{type:String,required:true},
+        block:{type:String},
+        village:{type:String},
         state:{type:String,required:true},
         postalCode:{type:String,required:true},
         country:{type:String,required:true}

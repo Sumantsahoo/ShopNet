@@ -4,6 +4,11 @@ const User = require('../model/user');
 const { createHash, randomBytes, randomInt, timingSafeEqual } = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 const markOrderPaid = require('../utils/markOrderPaid');
+const {
+    getEffectiveProductPrice,
+    getRegularPrice,
+    isAdditionalOfferLive
+} = require('../utils/productPricing');
 
 const hashSecret = (value) => createHash('sha256').update(value).digest();
 const EXCHANGE_WINDOW_MS = 10 * 24 * 60 * 60 * 1000;
@@ -98,8 +103,21 @@ const createOrder = async (req, res) => {
         if (!Array.isArray(orderItems) || orderItems.length === 0) {
             return res.status(400).json({ message: 'No order items' });
         }
-        if (!shippingAddress?.fullName || !shippingAddress?.phone || !shippingAddress?.address || !shippingAddress?.city || !shippingAddress?.district || !shippingAddress?.state || !shippingAddress?.postalCode || !shippingAddress?.country || !paymentMethod) {
+        const requiredAddressFields = ['fullName', 'phone', 'address', 'city', 'district', 'state', 'postalCode', 'country'];
+        if (!shippingAddress || requiredAddressFields.some((field) => typeof shippingAddress[field] !== 'string' || !shippingAddress[field].trim()) || typeof paymentMethod !== 'string' || !paymentMethod.trim()) {
             return res.status(400).json({ message: 'Shipping address and payment method are required' });
+        }
+        const invalidOptionalLocation = ['block', 'village'].some((field) => (
+            shippingAddress[field] !== undefined &&
+            (typeof shippingAddress[field] !== 'string' || shippingAddress[field].trim().length > 100)
+        ));
+        if (invalidOptionalLocation) {
+            return res.status(400).json({ message: 'Block and village names must be 100 characters or fewer.' });
+        }
+        if (shippingAddress.fullName.trim().length > 80 || shippingAddress.address.trim().length > 300 ||
+            shippingAddress.city.trim().length > 100 || shippingAddress.district.trim().length > 100 ||
+            shippingAddress.state.trim().length > 100 || !/^\d{6}$/.test(shippingAddress.postalCode.trim())) {
+            return res.status(400).json({ message: 'Enter a valid shipping address with a six-digit PIN code.' });
         }
         const validIndianMobile = (value) => typeof value === 'string' && /^[6-9]\d{9}$/.test(value);
         if (!validIndianMobile(shippingAddress.phone) || (shippingAddress.altPhone && !validIndianMobile(shippingAddress.altPhone))) {
@@ -133,10 +151,16 @@ const createOrder = async (req, res) => {
 
         const verifiedItems = normalizedItems.map((item) => {
             const product = productById.get(item.product.toString());
+            const offerIsLive = isAdditionalOfferLive(product);
             return {
                 name: product.name,
                 qty: item.qty,
-                price: product.price,
+                price: getEffectiveProductPrice(product),
+                regularPrice: getRegularPrice(product),
+                originalPrice: product.originalPrice,
+                discountPercent: product.discountPercent,
+                additionalDiscountPercent: offerIsLive ? product.additionalDiscountPercent : 0,
+                additionalOfferActive: offerIsLive,
                 product: product._id
             };
         });
@@ -146,13 +170,42 @@ const createOrder = async (req, res) => {
         const shippingPrice = 9;
         const totalPrice = Math.round((itemsPrice + taxPrice + promiseFee + shippingPrice) * 100) / 100;
 
+        const normalizedShippingAddress = {
+            fullName: shippingAddress.fullName.trim(),
+            phone: shippingAddress.phone.trim(),
+            altPhone: typeof shippingAddress.altPhone === 'string' ? shippingAddress.altPhone.trim() : '',
+            address: shippingAddress.address.trim(),
+            city: shippingAddress.city.trim(),
+            district: shippingAddress.district.trim(),
+            block: typeof shippingAddress.block === 'string' ? shippingAddress.block.trim() : '',
+            village: typeof shippingAddress.village === 'string' ? shippingAddress.village.trim() : '',
+            state: shippingAddress.state.trim(),
+            postalCode: shippingAddress.postalCode.trim(),
+            country: shippingAddress.country.trim()
+        };
         const consumedAuthorization = await User.findOneAndUpdate(
             {
                 _id: req.user._id,
                 orderAuthorizationHash: hashSecret(orderAuthorization).toString('hex'),
                 orderAuthorizationExpiresAt: { $gt: new Date() }
             },
-            { $unset: { orderAuthorizationHash: 1, orderAuthorizationExpiresAt: 1 } }
+            {
+                $unset: { orderAuthorizationHash: 1, orderAuthorizationExpiresAt: 1 },
+                $set: {
+                    defaultAddress: {
+                        fullName: normalizedShippingAddress.fullName,
+                        phone: normalizedShippingAddress.phone,
+                        altPhone: normalizedShippingAddress.altPhone,
+                        street: normalizedShippingAddress.address,
+                        district: normalizedShippingAddress.district,
+                        block: normalizedShippingAddress.block,
+                        village: normalizedShippingAddress.village,
+                        state: normalizedShippingAddress.state,
+                        postalCode: normalizedShippingAddress.postalCode,
+                        country: normalizedShippingAddress.country
+                    }
+                }
+            }
         );
         if (!consumedAuthorization) {
             return res.status(403).json({ message: 'Your order confirmation expired or was already used. Request a new code.' });
@@ -160,7 +213,7 @@ const createOrder = async (req, res) => {
 
         const order = await Order.create({
             orderItems: verifiedItems,
-            shippingAddress,
+            shippingAddress: normalizedShippingAddress,
             paymentMethod,
             itemsPrice,
             taxPrice,
@@ -179,7 +232,7 @@ const createOrder = async (req, res) => {
 
 const myOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user._id }).populate('orderItems.product', 'name brand price imageUrl rating numReviews');
+        const orders = await Order.find({ user: req.user._id }).populate('orderItems.product', 'name brand category price imageUrl rating numReviews showInRatingReviews');
         return res.json(orders);
     } catch (error) {
         return res.status(500).json({ message: 'Server error' });
@@ -232,7 +285,7 @@ const getOrderById = async (req, res) => {
         }
 
         const isOwner = order.user._id.toString() === req.user._id.toString();
-        if (!isOwner && req.user.role !== 'admin') {
+        if (!isOwner && !['admin', 'employee'].includes(req.user.role)) {
             return res.status(403).json({ message: 'Not authorized to view this order' });
         }
 

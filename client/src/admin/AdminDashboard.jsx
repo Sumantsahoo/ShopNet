@@ -70,8 +70,12 @@ const AdminDashboard = () => {
             )}
             <nav className="admin-shortcuts" aria-label="Admin management">
                 <Link to="/admin/products/edit">Edit products <span>Manage the catalog</span></Link>
+                <Link to="/admin/storefront">Edit front page <span>Change the homepage banner and manage section picks</span></Link>
+                <Link to="/admin/homepage-sections">Homepage sections <span>Choose product shelves from one page</span></Link>
                 <Link to="/admin/users">Customers <span>View registered users</span></Link>
+                <Link to="/admin/employees">Employees <span>Assign positions and review daily work updates</span></Link>
                 <Link to="/admin/orders">Orders <span>Review and update orders</span></Link>
+                <Link to="/admin/seasonal-deals">Seasonal deals <span>Manage campaign products and discounts</span></Link>
                 <Link to="/admin/profile">Admin profile <span>Account settings and store alerts</span></Link>
             </nav>
         </main>

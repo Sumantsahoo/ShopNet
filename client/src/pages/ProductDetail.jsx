@@ -5,10 +5,13 @@ import { addToCart } from '../redux/cartSlice';
 import { AuthContext } from '../context/AuthContext';
 import WishlistButton from '../components/WishlistButton';
 import ProductCard from '../components/ProductCard';
+import ProductPrice from '../components/ProductPrice';
 import { useLanguage } from '../context/LanguageContext';
 import { apiFetch } from '../utils/api';
 import { getCategorySlug } from '../utils/categories';
 import { readProductCache, saveProductCache } from '../utils/productCache';
+import { saveRecentProduct } from '../utils/recentProducts';
+import { getProductBasePrice, isProductOfferActive } from '../utils/productPricing';
 import '../styles/product.css';
 
 const FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='100%25' height='100%25' fill='%2327272a'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23a1a1aa' font-family='sans-serif' font-size='20'%3ENo Image Available%3C/text%3E%3C/svg%3E";
@@ -21,7 +24,9 @@ const ProductDetail = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [loading, setLoading] = useState(() => !readProductCache()?.some((item) => String(item._id) === String(id)));
     const [error, setError] = useState('');
+    const [relatedError, setRelatedError] = useState('');
     const [cartMessage, setCartMessage] = useState('');
+    const [cartHistoryError, setCartHistoryError] = useState('');
     const [shareMessage, setShareMessage] = useState('');
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
@@ -41,18 +46,42 @@ const ProductDetail = () => {
         setError('');
         const fetchProduct = async () => {
             try {
-                const [productResponse, productsResponse] = await Promise.all([
-                    apiFetch(`/api/products/${id}`),
-                    apiFetch('/api/products')
-                ]);
+                const productResponse = await apiFetch(`/api/products/${id}`);
                 const data = await productResponse.json();
                 if (!productResponse.ok) throw new Error(data.message || 'Could not load this product.');
-                const allProducts = await productsResponse.json();
-                if (!productsResponse.ok || !Array.isArray(allProducts)) throw new Error('Could not load similar products.');
                 if (cancelled) return;
                 setProduct(data);
-                saveProductCache(allProducts.map((item) => String(item._id) === String(data._id) ? data : item));
-                setRelatedProducts(allProducts.filter((item) => item._id !== data._id && getCategorySlug(item.category) === getCategorySlug(data.category)).slice(0, 4));
+                saveRecentProduct(String(data._id));
+                if (user?.token && user.role !== 'admin') {
+                    apiFetch(`/api/authorite/history/products/${data._id}`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${user.token}` }
+                    }).then(async (historyResponse) => {
+                        const historyData = await historyResponse.json();
+                        if (!historyResponse.ok) throw new Error(historyData.message || 'Could not save product history.');
+                    }).catch((historyError) => {
+                        console.error('Could not save account product history:', historyError);
+                    });
+                }
+                const cachedProducts = readProductCache() || [];
+                saveProductCache([
+                    data,
+                    ...cachedProducts.filter((item) => String(item._id) !== String(data._id))
+                ]);
+                try {
+                    const recommendationsResponse = await apiFetch(`/api/recommendations?productId=${encodeURIComponent(id)}`, {
+                        headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {}
+                    });
+                    const recommendationData = await recommendationsResponse.json();
+                    if (!recommendationsResponse.ok) throw new Error(recommendationData.message || 'Could not load similar products.');
+                    if (!cancelled) {
+                        setRelatedProducts(Array.isArray(recommendationData.similarProducts) ? recommendationData.similarProducts : []);
+                        setRelatedError('');
+                    }
+                } catch (recommendationError) {
+                    console.error('Could not load similar products:', recommendationError);
+                    if (!cancelled) setRelatedError(recommendationError.message || 'Could not load similar products.');
+                }
                 if (user?.token) {
                     try {
                         const ordersResponse = await apiFetch('/api/orders/myorders', {
@@ -78,7 +107,7 @@ const ProductDetail = () => {
         };
         fetchProduct();
         return () => { cancelled = true; };
-    }, [id, user?.token]);
+    }, [id, user?.role, user?.token]);
 
     useEffect(() => {
         if (!loading && location.hash === '#product-reviews') {
@@ -96,11 +125,29 @@ const ProductDetail = () => {
             price: product.price,
             imageUrl: product.imageUrl,
             originalPrice: product.originalPrice,
+            basePrice: getProductBasePrice(product),
+            discountPercent: product.discountPercent,
+            additionalDiscountPercent: product.additionalDiscountPercent,
+            additionalOfferActive: product.additionalOfferActive,
+            additionalOfferExpiresAt: product.additionalOfferExpiresAt,
             brand: product.brand,
             stock: product.stock,
             qty: 1
         }));
         setCartMessage(t('addedToCart'));
+        setCartHistoryError('');
+        if (user?.token && user.role !== 'admin') {
+            apiFetch(`/api/authorite/history/cart/${product._id}`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${user.token}` }
+            }).then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Could not save your cart activity.');
+            }).catch((historyError) => {
+                console.error('Could not save account cart activity:', historyError);
+                setCartHistoryError('Your item was added, but could not be saved for personalized recommendations.');
+            });
+        }
     };
 
     const handleShare = async () => {
@@ -160,7 +207,7 @@ const ProductDetail = () => {
     }
     if (!product) return <main className="product-detail-page"><p className="product-page-error" role="alert">{error || 'Product not found.'}</p><Link to="/shop">Browse products</Link></main>;
 
-    const hasDiscount = Number(product.originalPrice) > Number(product.price);
+    const hasDiscount = Number(product.originalPrice) > getProductBasePrice(product);
 
     return (
         <main className="product-detail-page">
@@ -192,11 +239,9 @@ const ProductDetail = () => {
                         <span>★ {averageRating}</span> · {Number(product.numReviews || 0)} ratings and reviews
                     </a>
                     <div className="detail-price-row">
-                        <strong className="detail-price">₹{Number(product.price).toFixed(2)}</strong>
-                        {hasDiscount && <del>₹{Number(product.originalPrice).toFixed(2)}</del>}
-                        {hasDiscount && <span className="detail-discount">{Math.round((1 - Number(product.price) / Number(product.originalPrice)) * 100)}% off</span>}
+                        <ProductPrice product={product} className="is-detail" />
                     </div>
-                    <p className="product-offer-note">{hasDiscount ? 'Special price available while stocks last.' : 'Secure payment options available at checkout.'}</p>
+                    <p className="product-offer-note">{hasDiscount || isProductOfferActive(product) ? 'Special price available while stocks last.' : 'Secure payment options available at checkout.'}</p>
 
                     <section className="product-delivery-card">
                         <strong>Delivery</strong>
@@ -224,15 +269,17 @@ const ProductDetail = () => {
                     </div>
                 </section>
             )}
+            {relatedError && <p className="product-page-error" role="status">{relatedError}</p>}
 
             <section className="product-bottom-actions">
                 <div>
                     <strong>{product.name}</strong>
-                    <span>₹{Number(product.price).toFixed(2)}</span>
+                    <ProductPrice product={product} className="is-compact" />
                 </div>
                 <button onClick={handleAddToCart} className="btn" disabled={product.stock < 1}>{t('addToCart')}</button>
                 <Link className="product-cart-link" to="/cart">Go to cart</Link>
                 {cartMessage && <p className="cart-feedback" role="status">{cartMessage}</p>}
+                {cartHistoryError && <p className="cart-feedback is-error" role="status">{cartHistoryError}</p>}
             </section>
 
             <section className="product-reviews" id="product-reviews">

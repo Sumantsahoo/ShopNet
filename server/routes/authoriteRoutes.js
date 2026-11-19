@@ -7,20 +7,29 @@ const {
     requestPasswordResetOtp,
     resetPasswordWithOtp,
     getUsers,
+    getCustomerLocationOptions,
     getProfile,
     updateDefaultAddress,
     updateProfile
 }=require("../controllers/authController");
 const {protect}=require('../middleware/authMiddleWare');
 const {admin}=require('../middleware/adminMiddleWare');
+const {commerceStaff}=require('../middleware/commerceStaffMiddleWare');
 const {
     getWishlist,
     addWishlistProduct,
     removeWishlistProduct
 }=require('../controllers/wishlistController');
 const sendEmail = require('../utils/sendEmail');
+const {
+    getShoppingHistory,
+    recordSearch,
+    removeSearch,
+    recordProductView,
+    recordCartAdd
+}=require('../controllers/shoppingHistoryController');
 
-router.get('/test-email', async (req, res) => {
+router.get('/test-email', protect, admin, async (req, res) => {
     try {
         const targetEmail = req.query.email || process.env.EMAIL_USER || 'sumantkusahoo06@gmail.com';
         const info = await sendEmail(
@@ -49,9 +58,15 @@ router.post('/forgot-password/reset',resetPasswordWithOtp);
 router.get('/profile',protect,getProfile);
 router.put('/profile',protect,updateDefaultAddress);
 router.put('/profile/settings',protect,updateProfile);
+router.get('/history',protect,getShoppingHistory);
+router.post('/history/searches',protect,recordSearch);
+router.delete('/history/searches',protect,removeSearch);
+router.post('/history/products/:productId',protect,recordProductView);
+router.post('/history/cart/:productId',protect,recordCartAdd);
 router.get('/wishlist',protect,getWishlist);
 router.post('/wishlist/:productId',protect,addWishlistProduct);
 router.delete('/wishlist/:productId',protect,removeWishlistProduct);
-router.get('/user',protect,admin,getUsers);
+router.get('/user/location-options',protect,commerceStaff,getCustomerLocationOptions);
+router.get('/user',protect,commerceStaff,getUsers);
 
 module.exports=router;

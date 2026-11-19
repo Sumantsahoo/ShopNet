@@ -4,6 +4,12 @@ const productSchema=new mongoose.Schema({
         required:true
     },
     brand:{type:String,trim:true,default:''},
+    color:{type:String,trim:true,default:''},
+    gender:{type:String,trim:true,default:''},
+    countryOfOrigin:{type:String,trim:true,default:''},
+    occasion:{type:String,trim:true,default:''},
+    sizes:{type:[String],default:[]},
+    fastDelivery:{type:Boolean,default:false},
     description:{
         type:String,
         required:true
@@ -12,10 +18,27 @@ const productSchema=new mongoose.Schema({
         type:Number,
         required:true
     },
+    basePrice:{
+        type:Number,
+        min:0
+    },
     originalPrice:{
         type:Number,
         min:0
     },
+    discountPercent:{
+        type:Number,
+        min:0,
+        max:100
+    },
+    additionalDiscountPercent:{
+        type:Number,
+        min:0,
+        max:100,
+        default:0
+    },
+    additionalOfferActive:{type:Boolean,default:true},
+    additionalOfferExpiresAt:{type:Date},
     category:{
         type:String,
         required:true
@@ -29,7 +52,22 @@ const productSchema=new mongoose.Schema({
         type:String,
         default:''
     },
+    showInAllProducts:{type:Boolean,default:true},
+    showInCelebrate:{type:Boolean,default:false},
+    showInValue365:{type:Boolean,default:false},
+    showInRatingReviews:{type:Boolean,default:false},
+    showInSuggested:{type:Boolean,default:false},
+    showInStillLooking:{type:Boolean,default:false},
+    showInFeatured:{type:Boolean,default:false},
+    featuredActive:{type:Boolean,default:true},
+    featuredOrder:{type:Number,default:0,min:0},
+    showInBrandSpotlight:{type:Boolean,default:false},
+    showInSeasonalDeals:{type:Boolean,default:false},
     createdAt:{
+        type:Date,
+        default:Date.now
+    },
+    updatedAt:{
         type:Date,
         default:Date.now
     },

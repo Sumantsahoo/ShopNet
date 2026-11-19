@@ -35,7 +35,10 @@ app.get("/",(req,res)=>{
 });
 
 app.use('/api/authorite',userRoutes);
+app.use('/api/staff',require('./routes/staffRoutes'));
 app.use('/api/products',require('./routes/productRoutes'));
+app.use('/api/storefront',require('./routes/storefrontRoutes'));
+app.use('/api/recommendations',require('./routes/recommendationRoutes'));
 app.use('/api/cart',require('./routes/cartRoutes'));
 app.use('/api/payment',require('./routes/paymentRoutes'));
 app.use('/api/orders',require('./routes/orderRoutes'));

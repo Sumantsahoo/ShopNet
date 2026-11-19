@@ -24,7 +24,7 @@ const AdminOrders = () => {
     const [paymentReferences, setPaymentReferences] = useState({});
 
     const fetchOrders = useCallback(async () => {
-        if (!user?.token || user.role !== 'admin') {
+        if (!user?.token || !['admin', 'employee'].includes(user.role)) {
             return;
         }
         setError('');
@@ -50,7 +50,7 @@ const AdminOrders = () => {
             navigate('/login');
             return;
         }
-        if (user.role !== 'admin') {
+        if (!['admin', 'employee'].includes(user.role)) {
             setLoading(false);
             return;
         }
@@ -155,12 +155,12 @@ const AdminOrders = () => {
         }
     };
 
-    if (user?.role !== 'admin') {
+    if (!['admin', 'employee'].includes(user?.role)) {
         return (
             <main className="orders-page">
                 <section className="orders-empty">
-                    <h2>Admin access required</h2>
-                    <p>Sign in with an administrator account to manage orders.</p>
+                    <h2>Order management access required</h2>
+                    <p>Sign in with an administrator or employee account to manage orders.</p>
                     <Link className="btn" to="/login">Go to login</Link>
                 </section>
             </main>
@@ -170,7 +170,7 @@ const AdminOrders = () => {
     return (
         <main className="orders-page">
             <header className="orders-heading">
-                <span>ADMINISTRATION</span>
+                <span>ORDER MANAGEMENT</span>
                 <h1>Manage orders</h1>
                 <p>Verify payments and update each paid order as it moves through fulfillment.</p>
             </header>

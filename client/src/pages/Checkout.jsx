@@ -2,10 +2,13 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { removeCartItems } from '../redux/cartSlice';
+import { removeCartItems, syncCartProducts } from '../redux/cartSlice';
 import { DISTRICTS_BY_STATE, INDIAN_STATES_AND_UTS, lookupIndiaPin } from '../utils/indiaAddress';
 import { useLanguage } from '../context/LanguageContext';
 import { apiFetch } from '../utils/api';
+import { fetchCurrentProducts } from '../utils/cartPrices';
+import { getProductFinalPrice } from '../utils/productPricing';
+import ProductPrice from '../components/ProductPrice';
 import '../styles/checkout.css';
 
 const loadRazorpay = () => new Promise((resolve) => {
@@ -29,16 +32,37 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [address, setAddress] = useState({
-    fullName: '', phone: user?.phone || '', altPhone: '', street: '', city: '', district: '', state: '', postalCode: '', country: 'India'
+    fullName: '', phone: user?.phone || '', altPhone: '', street: '', city: '', district: '', block: '', village: '', state: '', postalCode: '', country: 'India'
   });
   const [stage, setStage] = useState('details');
   const [otp, setOtp] = useState('');
   const [pendingOrderId, setPendingOrderId] = useState('');
+  const [createdOrder, setCreatedOrder] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [messageIsError, setMessageIsError] = useState(false);
   const [pinLookup, setPinLookup] = useState({ loading: false, message: '', isError: false });
+  const [priceRefresh, setPriceRefresh] = useState({ status: 'loading', error: '' });
+  const [refreshVersion, setRefreshVersion] = useState(0);
   const selectedCartItems = cartItems.filter((item) => checkoutItemIds.some((id) => String(id) === String(item._id || item.productId)));
+
+  useEffect(() => {
+    let cancelled = false;
+    const refreshPrices = async () => {
+      setPriceRefresh({ status: 'loading', error: '' });
+      try {
+        const products = await fetchCurrentProducts();
+        if (cancelled) return;
+        dispatch(syncCartProducts(products));
+        setPriceRefresh({ status: 'ready', error: '' });
+      } catch (error) {
+        console.error('Could not refresh checkout prices:', error);
+        if (!cancelled) setPriceRefresh({ status: 'error', error: error.message || 'Could not refresh product prices.' });
+      }
+    };
+    refreshPrices();
+    return () => { cancelled = true; };
+  }, [dispatch, refreshVersion]);
 
   useEffect(() => {
     if (!/^\d{6}$/.test(address.postalCode)) {
@@ -90,6 +114,8 @@ const Checkout = () => {
           altPhone: profile.defaultAddress.altPhone || '',
           street: profile.defaultAddress.street || '',
           district: profile.defaultAddress.district || '',
+          block: profile.defaultAddress.block || '',
+          village: profile.defaultAddress.village || '',
           city: profile.defaultAddress.district || '',
           state: profile.defaultAddress.state || '',
           postalCode: profile.defaultAddress.postalCode || '',
@@ -104,11 +130,17 @@ const Checkout = () => {
     return () => { cancelled = true; };
   }, [user?.name, user?.phone, user?.token]);
 
-  const itemsPrice = selectedCartItems.reduce((total, item) => total + Number(item.price) * Number(item.qty), 0);
+  const itemsPrice = selectedCartItems.reduce((total, item) => total + getProductFinalPrice(item) * Number(item.qty), 0);
   const taxPrice = Math.round(itemsPrice * 0.005 * 100) / 100;
   const promiseFee = 5;
   const shippingPrice = 9;
   const totalPrice = Math.round((itemsPrice + taxPrice + promiseFee + shippingPrice) * 100) / 100;
+  const summaryItems = createdOrder?.orderItems || selectedCartItems;
+  const summaryItemsPrice = createdOrder?.itemsPrice ?? itemsPrice;
+  const summaryTaxPrice = createdOrder?.taxPrice ?? taxPrice;
+  const summaryPromiseFee = createdOrder?.promiseFee ?? promiseFee;
+  const summaryShippingPrice = createdOrder?.shippingPrice ?? shippingPrice;
+  const summaryTotalPrice = createdOrder?.totalPrice ?? totalPrice;
   const authHeaders = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${user?.token}`
@@ -197,6 +229,10 @@ const Checkout = () => {
       showMessage('Select at least one product in your cart before checking out.', true);
       return;
     }
+    if (priceRefresh.status !== 'ready') {
+      showMessage(priceRefresh.error || 'Wait for current product prices to load before placing your order.', true);
+      return;
+    }
 
     setIsSubmitting(true);
     showMessage('');
@@ -253,6 +289,8 @@ const Checkout = () => {
             address: address.street,
             city: address.city,
             district: address.district,
+            block: address.block,
+            village: address.village,
             state: address.state,
             postalCode: address.postalCode,
             country: address.country
@@ -268,6 +306,7 @@ const Checkout = () => {
       }
 
       setOtp('');
+      setCreatedOrder(orderData.order);
       setPendingOrderId(orderData.order._id);
       setStage('payment');
       try {
@@ -390,7 +429,7 @@ const Checkout = () => {
                   autoComplete="address-level1"
                   required
                   value={address.state}
-                  onChange={(event) => setAddress({ ...address, state: event.target.value, district: '', city: '' })}
+                  onChange={(event) => setAddress({ ...address, state: event.target.value, district: '', city: '', block: '', village: '' })}
                 >
                   <option value="">{t('selectState')}</option>
                   {INDIAN_STATES_AND_UTS.map((state) => <option key={state} value={state}>{state}</option>)}
@@ -402,7 +441,7 @@ const Checkout = () => {
                   <select
                     required
                     value={address.district}
-                    onChange={(event) => setAddress({ ...address, district: event.target.value, city: event.target.value })}
+                    onChange={(event) => setAddress({ ...address, district: event.target.value, city: event.target.value, block: '', village: '' })}
                   >
                     <option value="">{t('selectDistrict')}</option>
                     {Array.from(new Set([...DISTRICTS_BY_STATE[address.state], ...(address.district ? [address.district] : [])])).map((district) => <option key={district} value={district}>{district}</option>)}
@@ -413,9 +452,17 @@ const Checkout = () => {
                     disabled={!address.state}
                     placeholder={address.state ? t('enterDistrict') : t('selectStateFirst')}
                     value={address.district}
-                    onChange={(event) => setAddress({ ...address, district: event.target.value, city: event.target.value })}
+                    onChange={(event) => setAddress({ ...address, district: event.target.value, city: event.target.value, block: '', village: '' })}
                   />
                 )}
+              </label>
+              <label className="shipping-field">
+                <span>{t('block')}</span>
+                <input type="text" maxLength={100} value={address.block} onChange={(event) => setAddress({ ...address, block: event.target.value })} />
+              </label>
+              <label className="shipping-field">
+                <span>{t('village')}</span>
+                <input type="text" maxLength={100} value={address.village} onChange={(event) => setAddress({ ...address, village: event.target.value })} />
               </label>
               <label className="shipping-field">
                 <span>{t('pinCode')}</span>
@@ -457,16 +504,30 @@ const Checkout = () => {
           )}
 
           {message && <p className={messageIsError ? 'checkout-message checkout-message-error' : 'checkout-message'} role={messageIsError ? 'alert' : 'status'}>{message}</p>}
+          {priceRefresh.status === 'loading' && <p className="checkout-message" role="status">Refreshing current product prices...</p>}
+          {priceRefresh.status === 'error' && (
+            <p className="checkout-message checkout-message-error" role="alert">
+              {priceRefresh.error} <button type="button" className="auth-text-button" onClick={() => setRefreshVersion((version) => version + 1)}>Retry</button>
+            </p>
+          )}
 
+          <div className="checkout-selected-items" aria-label="Selected products and current offers">
+            {summaryItems.map((item) => (
+              <div className="checkout-selected-item" key={item._id || item.product || item.productId}>
+                <span>{item.name} × {item.qty}</span>
+                <ProductPrice product={item} className="is-compact" />
+              </div>
+            ))}
+          </div>
           <div className="checkout-summary">
             <div className="checkout-price-breakdown" aria-label="Order total breakdown">
-              <div><span>{t('itemsSubtotal')}</span><strong>₹{itemsPrice.toFixed(2)}</strong></div>
-              <div><span>{t('tax')}</span><strong>₹{taxPrice.toFixed(2)}</strong></div>
-              <div><span>{t('promiseFee')}</span><strong>₹{promiseFee.toFixed(2)}</strong></div>
-              <div><span>{t('deliveryFee')}</span><strong>₹{shippingPrice.toFixed(2)}</strong></div>
-              <div className="checkout-total-row"><span>{t('totalToPay')}</span><strong>₹{totalPrice.toFixed(2)}</strong></div>
+              <div><span>{t('itemsSubtotal')}</span><strong>₹{summaryItemsPrice.toFixed(2)}</strong></div>
+              <div><span>{t('tax')}</span><strong>₹{summaryTaxPrice.toFixed(2)}</strong></div>
+              <div><span>{t('promiseFee')}</span><strong>₹{summaryPromiseFee.toFixed(2)}</strong></div>
+              <div><span>{t('deliveryFee')}</span><strong>₹{summaryShippingPrice.toFixed(2)}</strong></div>
+              <div className="checkout-total-row"><span>{t('totalToPay')}</span><strong>₹{summaryTotalPrice.toFixed(2)}</strong></div>
             </div>
-            <button type="submit" className="btn" disabled={isSubmitting || selectedCartItems.length === 0}>
+            <button type="submit" className="btn" disabled={isSubmitting || selectedCartItems.length === 0 || (stage === 'details' && priceRefresh.status !== 'ready')}>
               {isSubmitting
                 ? t('pleaseWait')
                 : stage === 'otp'

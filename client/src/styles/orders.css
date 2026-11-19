@@ -367,6 +367,10 @@
     white-space: nowrap;
 }
 
+.ordered-products .product-price-breakdown {
+    flex: 1 1 160px;
+}
+
 .ordered-product-rating {
     color: #fbbf24;
 }

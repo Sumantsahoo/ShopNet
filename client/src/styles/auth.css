@@ -106,3 +106,51 @@
     cursor:wait;
     opacity:.7;
 }
+
+.product-visibility-options {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #3f3f46;
+    border-radius: 8px;
+    color: #d4d4d8;
+}
+
+.product-visibility-options legend {
+    padding: 0 6px;
+    color: #fb923c;
+    font-weight: 700;
+}
+
+.product-visibility-options label {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 0.9rem;
+}
+
+.product-visibility-options input {
+    width: auto;
+    margin: 3px 0 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    accent-color: #ea580c;
+}
+
+.auth-form .admin-fast-delivery,
+.admin-fast-delivery {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #d4d4d8;
+    font-size: 0.88rem;
+}
+
+.auth-form .admin-fast-delivery input,
+.admin-fast-delivery input {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    accent-color: #ea580c;
+}

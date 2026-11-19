@@ -87,6 +87,14 @@ const cartSlice=createSlice({
                 .filter((id) => availableIds.has(id));
             persistCartState(state.cartItems, state.checkoutItemIds, state.owner);
         },
+        syncCartProducts:(state,action)=>{
+            const productsById = new Map((action.payload || []).map((product) => [String(product._id), product]));
+            state.cartItems = state.cartItems.map((item) => {
+                const currentProduct = productsById.get(String(getItemId(item)));
+                return currentProduct ? { ...item, ...currentProduct, qty: item.qty } : item;
+            });
+            persistCartState(state.cartItems, state.checkoutItemIds, state.owner);
+        },
         removeCartItems:(state,action)=>{
             const purchasedIds = new Set((action.payload || []).map(String));
             state.cartItems=state.cartItems.filter((item) => !purchasedIds.has(String(getItemId(item))));
@@ -113,6 +121,6 @@ const cartSlice=createSlice({
         }
     },
 });
-export const {addToCart,removeFromCart,updateCartQuantity,setCheckoutItems,removeCartItems,clearCart,setCartOwner}=cartSlice.actions;
+export const {addToCart,removeFromCart,updateCartQuantity,setCheckoutItems,syncCartProducts,removeCartItems,clearCart,setCartOwner}=cartSlice.actions;
 export {getCartOwner};
 export default cartSlice.reducer;

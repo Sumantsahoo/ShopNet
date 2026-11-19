@@ -1,0 +1,214 @@
+.employee-workspace {
+    width: min(100% - 32px, 1000px);
+    min-height: 70vh;
+    margin: 0 auto;
+    padding: 48px 0 80px;
+    color: #f4f4f5;
+}
+
+.employee-workspace-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.employee-workspace-heading > div > span,
+.employee-attendance-details > span {
+    color: #fdba74;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.employee-workspace-heading h1 {
+    margin: 8px 0;
+    color: #fafafa;
+    font-size: clamp(1.7rem, 4vw, 2.5rem);
+}
+
+.employee-workspace-heading p,
+.employee-status {
+    color: #a1a1aa;
+}
+
+.employee-attendance-card,
+.employee-history-card {
+    padding: clamp(20px, 4vw, 32px);
+    border: 1px solid #3f3f46;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #18181b, #111113);
+}
+
+.employee-attendance-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.employee-attendance-details {
+    min-width: 0;
+}
+
+.employee-attendance-details h2,
+.employee-history-card h2 {
+    margin: 8px 0 18px;
+    color: #fafafa;
+}
+
+.employee-attendance-details p {
+    color: #d4d4d8;
+}
+
+.employee-work-summary {
+    max-width: 620px;
+    line-height: 1.6;
+}
+
+.employee-primary-action,
+.employee-logout {
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid #ea580c;
+    border-radius: 7px;
+    color: #fff;
+    background: #c2410c;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.employee-primary-action:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.employee-logout {
+    border-color: #52525b;
+    background: #27272a;
+}
+
+.employee-checkout-form {
+    display: grid;
+    flex: 0 1 420px;
+    gap: 10px;
+}
+
+.employee-checkout-form label {
+    color: #e4e4e7;
+    font-weight: 700;
+}
+
+.employee-checkout-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #52525b;
+    border-radius: 7px;
+    color: #fafafa;
+    background: #09090b;
+    font: inherit;
+    resize: vertical;
+}
+
+.employee-day-complete {
+    align-self: center;
+    color: #86efac;
+    font-weight: 700;
+}
+
+.employee-history-card {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.employee-history-card h2 {
+    margin-bottom: 4px;
+}
+
+.employee-history-card article {
+    display: grid;
+    grid-template-columns: minmax(100px, 0.5fr) minmax(180px, 1fr);
+    gap: 8px 16px;
+    padding: 14px 0;
+    border-top: 1px solid #3f3f46;
+}
+
+.employee-history-card article span {
+    color: #a1a1aa;
+}
+
+.employee-history-card article p {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: #d4d4d8;
+    line-height: 1.5;
+}
+
+.employee-message {
+    color: #86efac;
+}
+
+.employee-message.is-error {
+    color: #fca5a5;
+}
+
+html[data-theme="light"] .employee-workspace {
+    color: #18181b;
+}
+
+html[data-theme="light"] .employee-workspace-heading h1,
+html[data-theme="light"] .employee-attendance-details h2,
+html[data-theme="light"] .employee-history-card h2 {
+    color: #18181b;
+}
+
+html[data-theme="light"] .employee-workspace-heading p,
+html[data-theme="light"] .employee-status,
+html[data-theme="light"] .employee-history-card article span {
+    color: #52525b;
+}
+
+html[data-theme="light"] .employee-attendance-card,
+html[data-theme="light"] .employee-history-card {
+    border-color: #e4e4e7;
+    background: linear-gradient(145deg, #fff7ed, #fff);
+}
+
+html[data-theme="light"] .employee-attendance-details p,
+html[data-theme="light"] .employee-history-card article p,
+html[data-theme="light"] .employee-checkout-form label {
+    color: #27272a;
+}
+
+html[data-theme="light"] .employee-checkout-form textarea {
+    border-color: #d4d4d8;
+    color: #18181b;
+    background: #fff;
+}
+
+html[data-theme="light"] .employee-day-complete,
+html[data-theme="light"] .employee-message {
+    color: #166534;
+}
+
+html[data-theme="light"] .employee-message.is-error {
+    color: #b91c1c;
+}
+
+html[data-theme="light"] .employee-history-card article {
+    border-color: #e4e4e7;
+}
+
+@media (max-width: 600px) {
+    .employee-workspace-heading,
+    .employee-attendance-card {
+        flex-direction: column;
+    }
+
+    .employee-history-card article {
+        grid-template-columns: 1fr;
+    }
+}
